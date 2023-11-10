@@ -5,10 +5,6 @@ import tkinter as tk
 from pathlib import Path
 from pydub import AudioSegment
 
-
-# simple function returns file from a file_path parameter
-
-
 def getfilepath():
     _filepath.set(tk.filedialog.askopenfilename())
 
