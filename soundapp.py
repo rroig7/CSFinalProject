@@ -16,7 +16,7 @@ def checkforwav(file_path):
     file_extension = os.path.splitext(file_path)[1]
     return file_extension.lower() == '.wav'
 
-print(checkforwav('..\\test.wav'))
+print(checkforwav('..\\test.wav')) # for testing purposes
 
 
 if __name__ == "__main__":  # execute logic if run directly
