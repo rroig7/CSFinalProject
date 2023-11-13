@@ -4,15 +4,24 @@ from tkinter import ttk, filedialog, messagebox
 import tkinter as tk
 from pathlib import Path
 from pydub import AudioSegment
+import wave
+import matplotlib.pyplot as plt
+import numpy as np
+
+#returns raw audio data from wav file
+def getwavdata(audio_file):
+    wav_file = wave.open(audio_file, 'rb')
+    audio_data = wav_file.readframes(wav_file.getnframes())
+    return np.frombuffer(audio_data, np.int16)
 
 
 def getfilepath():
     _filepath.set(tk.filedialog.askopenfilename())
 
+
 def loadfilepath():
     try:
         if str(_choose_file_textbox.get()) != '':
-            print(type(_choose_file_textbox.get()))
             _filepath.set(_choose_file_textbox.get())
             sb(f'File path set as \"{_filepath.get()}\"')
         else:
@@ -49,10 +58,11 @@ def converttowav(input_file):
     except Exception as e:
         print(f"Error during conversion: {e}")
 
+def createplot():
+    plt.plot(getwavdata(_filepath.get()))
+    plt.show()
 
 if __name__ == "__main__":  # execute logic if run directly
-
-
     _root = Tk()  # instantiate instance of Tk class
     _root.title('Sound App')
     _root.geometry('600x500')
@@ -126,6 +136,29 @@ if __name__ == "__main__":  # execute logic if run directly
         sticky='E',
     )
 
+    _data_file_frame = ttk.LabelFrame(
+        _mainframe,
+        padding='5 5 5 5',
+        text='Data'
+    )
+    _data_file_frame.grid(
+        column=0,
+        row=1,
+        sticky='new'
+    )
+    _data_file_frame.rowconfigure(1, weight=1)
+    _data_file_frame.columnconfigure(0, weight=1)
+
+    _plot_show = ttk.Button(
+        _data_file_frame,
+        text='Plot',
+        command=createplot
+    )
+    _plot_show.grid(
+        column=0,
+        row=1
+    )
+
     _status_frame = ttk.Frame(
         _root, relief='sunken', padding='2 2 2 2')
     _status_frame.grid(row=1, column=0, sticky=("E", "W", "S"))
@@ -137,6 +170,7 @@ if __name__ == "__main__":  # execute logic if run directly
 
     #_root.bind("<Configure>", on_resize)
     _root.mainloop()  # listens for events, blocks any code that comes after it
+
 
 
 
