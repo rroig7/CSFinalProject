@@ -11,9 +11,6 @@ def getfilepath():
 
 
 # checks if file is in wav format
-def checkforwav(file_path) -> bool:
-    file_extension = os.path.splitext(file_path)[1]
-    return file_extension.lower() == '.wav'
 
 
 # Not finished, not sure if this function works or not
@@ -33,15 +30,16 @@ def converttowav(input_file):
 
     try:
         # Attempt to load and convert the audio file
-        audiofile = AudioSegment.from_file(input_file, format=file_extension[1:])
-        output_file = os.path.splitext(input_file)[0] + '.wav'
-        audiofile.export(output_file, format='wav')
-        print(f"Conversion successful. WAV file saved as {output_file}")
+        audiofile = AudioSegment.from_file(input_file, format='wav')
+        print(f"Conversion successful. WAV file saved as {audiofile}")
+        return audiofile
     except Exception as e:
         print(f"Error during conversion: {e}")
 
 
 if __name__ == "__main__":  # execute logic if run directly
+
+
     _root = Tk()  # instantiate instance of Tk class
     _root.title('Sound App')
     _root.geometry('600x500')
@@ -84,7 +82,6 @@ if __name__ == "__main__":  # execute logic if run directly
     )
 
     _root.mainloop()  # listens for events, blocks any code that comes after it
-
 
 
 
