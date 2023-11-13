@@ -4,7 +4,8 @@ from tkinter import ttk, filedialog, messagebox
 import tkinter as tk
 from pathlib import Path
 from pydub import AudioSegment
-# DO YOU SEE THIS??????????????????
+
+
 def getfilepath():
     _filepath.set(tk.filedialog.askopenfilename())
 
