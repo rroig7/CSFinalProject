@@ -6,12 +6,6 @@ from pathlib import Path
 from pydub import AudioSegment
 
 
-def on_resize(event, frame):
-    # Update the frame's size based on the window size
-    new_width = event.width
-    new_height = event.height
-    frame.config(width=new_width, height=new_height)
-
 def getfilepath():
     _filepath.set(tk.filedialog.askopenfilename())
 
