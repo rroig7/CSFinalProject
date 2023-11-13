@@ -10,10 +10,6 @@ def getfilepath():
 
 
 
-
-print('yeet')
-
-
 # checks if file is in wav format
 def checkforwav(file_path) -> bool:
     file_extension = os.path.splitext(file_path)[1]
