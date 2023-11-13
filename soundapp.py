@@ -5,16 +5,27 @@ import tkinter as tk
 from pathlib import Path
 from pydub import AudioSegment
 
+#racism
 
 def getfilepath():
     _filepath.set(tk.filedialog.askopenfilename())
 
 def loadfilepath():
-    _filepath.set(_choose_file_textbox.get())
+    try:
+        if str(_choose_file_textbox.get()) != '':
+            print(type(_choose_file_textbox.get()))
+            _filepath.set(_choose_file_textbox.get())
+            sb(f'File path set as \"{_filepath.get()}\"')
+        else:
+            sb('File path cannot be empty.')
+    except:
+        sb('Error setting specified path.')
 
 
 # checks if file is in wav format
 
+def sb(msg):
+    _status_msg.set(msg)
 
 # Not finished, not sure if this function works or not
 def converttowav(input_file):
@@ -46,21 +57,30 @@ if __name__ == "__main__":  # execute logic if run directly
     _root = Tk()  # instantiate instance of Tk class
     _root.title('Sound App')
     _root.geometry('600x500')
+    _root.rowconfigure(0, weight=1)
+    _root.columnconfigure(0, weight=1)
+    #_root.resizable(False, False)
     _mainframe = ttk.Frame(_root, padding='5 5 5 5 ')  # root is parent of frame
-    _mainframe.grid(row=0, column=0, sticky=("E", "W", "N", "S"))  # placed on first row,col of parent
+    _mainframe.grid(row=0, column=0, sticky=("E", "W", "N", "S"))
+    _mainframe.rowconfigure(0, weight=1)
+    _mainframe.columnconfigure(0, weight=1)
+    # placed on first row,col of parent
     # frame can extend itself in all cardinal directions
 
 
 
     _load_file_frame = ttk.LabelFrame(
         _mainframe,
-        padding='5 5 0 5',
+        padding='5 5 5 5',
         text='Choose File'
     )
     _load_file_frame.grid(
         column=0,
-        row=0
+        row=0,
+        sticky='new'
     )
+    _load_file_frame.rowconfigure(0, weight=1)
+    _load_file_frame.columnconfigure(0, weight=1)
 
     _filepath = StringVar()
 
@@ -83,6 +103,7 @@ if __name__ == "__main__":  # execute logic if run directly
     _choose_file_textbox.grid(
         column=0,
         row=1,
+        sticky='ew'
     )
 
     _choose_file_button = ttk.Button(
@@ -104,9 +125,18 @@ if __name__ == "__main__":  # execute logic if run directly
         column=2,
         row=1,
         sticky='E',
-        padx=40
     )
 
+    _status_frame = ttk.Frame(
+        _root, relief='sunken', padding='2 2 2 2')
+    _status_frame.grid(row=1, column=0, sticky=("E", "W", "S"))
+    _status_msg = StringVar() # need modified when update status text
+    _status_msg.set('')
+    _status= ttk.Label(
+        _status_frame, textvariable=_status_msg, anchor=W)
+    _status.grid(row=0, column=0, sticky=(E, W))
+
+    #_root.bind("<Configure>", on_resize)
     _root.mainloop()  # listens for events, blocks any code that comes after it
 
 
