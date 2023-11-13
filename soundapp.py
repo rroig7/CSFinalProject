@@ -9,6 +9,9 @@ from pydub import AudioSegment
 def getfilepath():
     _filepath.set(tk.filedialog.askopenfilename())
 
+def loadfilepath():
+    _filepath.set(_choose_file_textbox.get())
+
 
 # checks if file is in wav format
 
@@ -47,10 +50,22 @@ if __name__ == "__main__":  # execute logic if run directly
     _mainframe.grid(row=0, column=0, sticky=("E", "W", "N", "S"))  # placed on first row,col of parent
     # frame can extend itself in all cardinal directions
 
+
+
+    _load_file_frame = ttk.LabelFrame(
+        _mainframe,
+        padding='5 5 0 5',
+        text='Choose File'
+    )
+    _load_file_frame.grid(
+        column=0,
+        row=0
+    )
+
     _filepath = StringVar()
 
     _choose_file_label = ttk.Label(
-        _mainframe,
+        _load_file_frame,
         text='Please input the path file you would like to analyze: ',
     )
     _choose_file_label.grid(
@@ -61,17 +76,17 @@ if __name__ == "__main__":  # execute logic if run directly
     )
 
     _choose_file_textbox = ttk.Entry(
-        _mainframe,
-        width=80,
+        _load_file_frame,
+        width=70,
         textvariable=_filepath
     )
     _choose_file_textbox.grid(
         column=0,
-        row=1
+        row=1,
     )
 
     _choose_file_button = ttk.Button(
-        _mainframe,
+        _load_file_frame,
         text='Browse',
         command=getfilepath
     )
@@ -79,6 +94,17 @@ if __name__ == "__main__":  # execute logic if run directly
         column=0,
         row=2,
         sticky='W'
+    )
+    _load_file_button = ttk.Button(
+        _load_file_frame,
+        text='Load',
+        command=loadfilepath
+    )
+    _load_file_button.grid(
+        column=2,
+        row=1,
+        sticky='E',
+        padx=40
     )
 
     _root.mainloop()  # listens for events, blocks any code that comes after it
