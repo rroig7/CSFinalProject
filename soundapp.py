@@ -18,9 +18,27 @@ def checkforwav(file_path) -> bool:
 
 # Not finished, not sure if this function works or not
 def converttowav(input_file):
-    audiofile = AudioSegment.from_file(input_file, format='wav')
-    output_file = os.path.splitext(input_file)[0] + '.wav'
-    audiofile.export(output_file, format='wav')
+    # Check if the file exists
+    if not os.path.isfile(input_file):
+        print(f"Error: File {input_file} not found.")
+        return
+
+    # Check if the file has a supported audio extension
+    supported_extensions = ['.mp3', '.wav', '.ogg']  # audio extensions
+    file_extension = os.path.splitext(input_file)[1].lower()
+
+    if file_extension not in supported_extensions:
+        print(f"Error: Unsupported file format ({file_extension}). Supported formats are {supported_extensions}.")
+        return
+
+    try:
+        # Attempt to load and convert the audio file
+        audiofile = AudioSegment.from_file(input_file, format=file_extension[1:])
+        output_file = os.path.splitext(input_file)[0] + '.wav'
+        audiofile.export(output_file, format='wav')
+        print(f"Conversion successful. WAV file saved as {output_file}")
+    except Exception as e:
+        print(f"Error during conversion: {e}")
 
 
 if __name__ == "__main__":  # execute logic if run directly
@@ -66,3 +84,7 @@ if __name__ == "__main__":  # execute logic if run directly
     )
 
     _root.mainloop()  # listens for events, blocks any code that comes after it
+
+
+
+
