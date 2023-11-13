@@ -4,9 +4,14 @@ from tkinter import ttk, filedialog, messagebox
 import tkinter as tk
 from pathlib import Path
 from pydub import AudioSegment
-# DO YOU SEE THIS??????????????????
+# DO YOU SEE THIS?????????????????? YES I DO
 def getfilepath():
     _filepath.set(tk.filedialog.askopenfilename())
+
+
+
+
+print('yeet')
 
 
 # checks if file is in wav format
