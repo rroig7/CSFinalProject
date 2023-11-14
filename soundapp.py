@@ -8,11 +8,11 @@ from pydub import AudioSegment
 import wave
 import matplotlib.pyplot as plt
 import matplotlib.figure as Figure
-from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg,  NavigationToolbar2Tk)
+from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
 import numpy as np
 
 
-#returns raw audio data from wav file
+# returns raw audio data from wav file
 def getwavdata(audio_file):
     wav_file = wave.open(audio_file, 'rb')
     audio_data = wav_file.readframes(wav_file.getnframes())
@@ -21,8 +21,6 @@ def getwavdata(audio_file):
 
 def getfilepath():
     _filepath.set(tk.filedialog.askopenfilename())
-
-
 
 
 def loadfilepath():
@@ -40,6 +38,7 @@ def loadfilepath():
 
 def sb(msg):
     _status_msg.set(msg)
+
 
 # Not finished, not sure if this function works or not
 '''def converttowav(input_file):
@@ -65,6 +64,7 @@ def sb(msg):
         print(f"Error during conversion: {e}")
 '''
 
+
 # This works! It extracts raw audio data from any audio file type, then returns it as wav
 def converttowav(audio_file_path):
     audio_file = AudioSegment.from_file(
@@ -82,8 +82,8 @@ def converttowav(audio_file_path):
 
     return wav_audio
 
-def extractdata():
 
+def extractdata():
     wav_audio = converttowav(_filepath.get())
 
     raw_data = np.frombuffer(wav_audio.raw_data, dtype=np.int16)
@@ -99,8 +99,9 @@ def extractdata():
     time_string = f'{time_min} minutes {time_sec} seconds'
     print(time_string)
 
+
 def createplot():
-    #data = getwavdata(_filepath.get())
+    # data = getwavdata(_filepath.get())
 
     data = np.frombuffer(converttowav(_filepath.get()).raw_data, dtype=np.int16)
 
@@ -112,21 +113,20 @@ def createplot():
     canvas.draw()
     canvas.get_tk_widget().grid(column=0, row=3)
 
+
 if __name__ == "__main__":  # execute logic if run directly
     _root = Tk()  # instantiate instance of Tk class
     _root.title('Sound App')
     _root.geometry('800x500')
     _root.rowconfigure(0, weight=1)
     _root.columnconfigure(0, weight=1)
-    #_root.resizable(False, False)
+    # _root.resizable(False, False)
     _mainframe = ttk.Frame(_root, padding='5 5 5 5 ')  # root is parent of frame
     _mainframe.grid(row=0, column=0, sticky=("E", "W", "N", "S"))
     _mainframe.rowconfigure(0, weight=1)
     _mainframe.columnconfigure(0, weight=1)
     # placed on first row,col of parent
     # frame can extend itself in all cardinal directions
-
-
 
     _load_file_frame = ttk.LabelFrame(
         _mainframe,
@@ -223,15 +223,11 @@ if __name__ == "__main__":  # execute logic if run directly
     _status_frame = ttk.Frame(
         _root, relief='sunken', padding='2 2 2 2')
     _status_frame.grid(row=1, column=0, sticky=("E", "W", "S"))
-    _status_msg = StringVar() # need modified when update status text
+    _status_msg = StringVar()  # need modified when update status text
     _status_msg.set('')
-    _status= ttk.Label(
+    _status = ttk.Label(
         _status_frame, textvariable=_status_msg, anchor=W)
     _status.grid(row=0, column=0, sticky=(E, W))
 
-    #_root.bind("<Configure>", on_resize)
+    # _root.bind("<Configure>", on_resize)
     _root.mainloop()  # listens for events, blocks any code that comes after it
-
-
-
-
