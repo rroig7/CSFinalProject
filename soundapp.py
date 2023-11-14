@@ -22,6 +22,8 @@ def getfilepath():
     _filepath.set(tk.filedialog.askopenfilename())
 
 
+
+
 def loadfilepath():
     try:
         if str(_choose_file_textbox.get()) != '':
@@ -39,7 +41,7 @@ def sb(msg):
     _status_msg.set(msg)
 
 # Not finished, not sure if this function works or not
-def converttowav(input_file):
+'''def converttowav(input_file):
     # Check if the file exists
     if not os.path.isfile(input_file):
         print(f"Error: File {input_file} not found.")
@@ -60,11 +62,31 @@ def converttowav(input_file):
         return audiofile
     except Exception as e:
         print(f"Error during conversion: {e}")
+'''
+
+# This works! It extracts raw audio data from any audio file type, then returns it as wav
+def converttowav(audio_file_path):
+    audio_file = AudioSegment.from_file(
+        audio_file_path,
+        format=os.path.splitext(audio_file_path)[-1].strip('.')
+    )
+
+    wav_data = audio_file.raw_data
+    wav_audio = AudioSegment(
+        wav_data,
+        frame_rate=audio_file.frame_rate,
+        sample_width=audio_file.sample_width,
+        channels=audio_file.channels
+    )
+
+    return wav_audio
 
 def createplot():
-    data = getwavdata(_filepath.get())
+    #data = getwavdata(_filepath.get())
 
-    fig, ax = plt.subplots(figsize=(5,2))
+    data = np.frombuffer(converttowav(_filepath.get()).raw_data, dtype=np.int16)
+
+    fig, ax = plt.subplots(figsize=(5, 2))
     ax.plot(data)
     ax.set_title('Waveform of ' + _filepath.get().split('/')[-1])
 
