@@ -1,3 +1,4 @@
+import datetime
 import os.path
 from tkinter import *
 from tkinter import ttk, filedialog, messagebox
@@ -81,6 +82,23 @@ def converttowav(audio_file_path):
 
     return wav_audio
 
+def extractdata():
+
+    wav_audio = converttowav(_filepath.get())
+
+    raw_data = np.frombuffer(wav_audio.raw_data, dtype=np.int16)
+
+    time_duration = len(raw_data) / wav_audio.frame_rate
+    wav_audio_time_length = np.linspace(0, time_duration, len(raw_data))
+
+    print(wav_audio_time_length)
+
+    time_min = time_duration // 60
+    time_sec = round(time_duration % (24 * 3600), 2)
+
+    time_string = f'{time_min} minutes {time_sec} seconds'
+    print(time_string)
+
 def createplot():
     #data = getwavdata(_filepath.get())
 
@@ -92,12 +110,12 @@ def createplot():
 
     canvas = FigureCanvasTkAgg(fig, master=_data_file_frame)
     canvas.draw()
-    canvas.get_tk_widget().grid(column=0, row=0)
+    canvas.get_tk_widget().grid(column=0, row=3)
 
 if __name__ == "__main__":  # execute logic if run directly
     _root = Tk()  # instantiate instance of Tk class
     _root.title('Sound App')
-    _root.geometry('600x500')
+    _root.geometry('800x500')
     _root.rowconfigure(0, weight=1)
     _root.columnconfigure(0, weight=1)
     #_root.resizable(False, False)
@@ -188,7 +206,18 @@ if __name__ == "__main__":  # execute logic if run directly
     )
     _plot_show.grid(
         column=0,
-        row=1
+        row=1,
+        sticky='wn'
+    )
+    _data_show = ttk.Button(
+        _data_file_frame,
+        text='Data',
+        command=extractdata
+    )
+    _data_show.grid(
+        column=0,
+        row=2,
+        sticky='nw'
     )
 
     _status_frame = ttk.Frame(
