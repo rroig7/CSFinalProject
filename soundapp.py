@@ -66,7 +66,7 @@ def createplot():
 
     fig, ax = plt.subplots(figsize=(5,2))
     ax.plot(data)
-    ax.set_title('Signal Graph')
+    ax.set_title('Waveform of ' + _filepath.get().split('/')[-1])
 
     canvas = FigureCanvasTkAgg(fig, master=_data_file_frame)
     canvas.draw()
