@@ -6,7 +6,10 @@ from pathlib import Path
 from pydub import AudioSegment
 import wave
 import matplotlib.pyplot as plt
+import matplotlib.figure as Figure
+from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg,  NavigationToolbar2Tk)
 import numpy as np
+
 
 #returns raw audio data from wav file
 def getwavdata(audio_file):
@@ -59,8 +62,15 @@ def converttowav(input_file):
         print(f"Error during conversion: {e}")
 
 def createplot():
-    plt.plot(getwavdata(_filepath.get()))
-    plt.show()
+    data = getwavdata(_filepath.get())
+
+    fig, ax = plt.subplots(figsize=(5,2))
+    ax.plot(data)
+    ax.set_title('Signal Graph')
+
+    canvas = FigureCanvasTkAgg(fig, master=_data_file_frame)
+    canvas.draw()
+    canvas.get_tk_widget().grid(column=0, row=0)
 
 if __name__ == "__main__":  # execute logic if run directly
     _root = Tk()  # instantiate instance of Tk class
