@@ -40,31 +40,6 @@ def sb(msg):
     _status_msg.set(msg)
 
 
-# Not finished, not sure if this function works or not
-'''def converttowav(input_file):
-    # Check if the file exists
-    if not os.path.isfile(input_file):
-        print(f"Error: File {input_file} not found.")
-        return
-
-    # Check if the file has a supported audio extension
-    supported_extensions = ['.mp3', '.wav', '.ogg']  # audio extensions
-    file_extension = os.path.splitext(input_file)[1].lower()
-
-    if file_extension not in supported_extensions:
-        print(f"Error: Unsupported file format ({file_extension}). Supported formats are {supported_extensions}.")
-        return
-
-    try:
-        # Attempt to load and convert the audio file
-        audiofile = AudioSegment.from_file(input_file, format='wav')
-        print(f"Conversion successful. WAV file saved as {audiofile}")
-        return audiofile
-    except Exception as e:
-        print(f"Error during conversion: {e}")
-'''
-
-
 # This works! It extracts raw audio data from any audio file type, then returns it as wav
 def converttowav(audio_file_path):
     audio_file = AudioSegment.from_file(
