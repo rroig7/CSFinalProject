@@ -17,6 +17,7 @@ class AudioAnalyzerApp:
         self.master.title("Audio Analyzer")
         self.mainframe = None
         self.load_file_frame = None
+        self.status_frame = None
 
         self._filepath = StringVar()
         self._status_msg = StringVar()
@@ -35,30 +36,38 @@ class AudioAnalyzerApp:
         self.mainframe.columnconfigure(0, weight=1)
 
         self.load_file_frame = ttk.LabelFrame(self.mainframe, padding='5 5 5 5', text='Choose File')
-        self.load_file_frame.grid(column=0, row=0, sticky='new')
+        self.load_file_frame.grid(column=0, row=0, sticky='NEW')
         self.load_file_frame.columnconfigure(0, weight=1)
         self.load_file_frame.rowconfigure(0, weight=1)
 
         choose_file_label = ttk.Label(self.load_file_frame, text='Please input file you would like to analyze:')
-        choose_file_label.grid(column= 0, row= 0, columnspan= 1, sticky='NEWS')
+        choose_file_label.grid(column=0, row=0, columnspan=1, sticky='NEWS')
 
-        choose_file_text = ttk.Entry(self.load_file_frame, width= 70, textvariable=self._filepath)
-        choose_file_text.grid(column=0,row=1,sticky='news')
+        choose_file_text = ttk.Entry(self.load_file_frame, width=70, textvariable=self._filepath)
+        choose_file_text.grid(column=0, row=1, sticky='NEWS')
 
+        choose_file_button = ttk.Button(self.load_file_frame, text="Browse", command=self.getfilepath)
+        choose_file_button.grid(row=2, column=0, sticky='W')
 
-        choose_file_button = ttk.Button(self.master, text="Choose File", command=self.getfilepath)
-        choose_file_button.grid(row=0, column=1, padx=10, pady=10)
+        load_file_button = ttk.Button(self.load_file_frame, text="Load", command=self.loadfilepath)
+        load_file_button.grid(row=1, column=1, sticky='E')
 
-        load_file_button = ttk.Button(self.master, text="Load File", command=self.loadfilepath)
-        load_file_button.grid(row=1, column=0, columnspan=2, pady=10)
+        data_file_frame = ttk.LabelFrame(self.mainframe, padding='5 5 5 5', text='Data')
+        data_file_frame.grid(column=0, row=1, sticky='NEW')
+        data_file_frame.rowconfigure(1, weight=1)
+        data_file_frame.columnconfigure(0, weight=1)
 
-        extract_data_button = ttk.Button(self.master, text="Extract Data", command=self.extractdata)
-        extract_data_button.grid(row=2, column=0, columnspan=2, pady=10)
+        show_plot = ttk.Button(data_file_frame, text='Plot', command=self.createplot)
+        show_plot.grid(column=0, row=1, sticky='WN')
 
-        create_plot_button = ttk.Button(self.master, text="Create Plot", command=self.createplot)
-        create_plot_button.grid(row=3, column=0, columnspan=2, pady=10)
+        show_data = ttk.Button(data_file_frame, text='Data', command=self.extractdata)
+        show_data.grid(column=0, row=2, sticky='WN')
 
-        # Add other widgets and layout as needed
+        self.status_frame = ttk.Frame(self.master, relief='sunken', padding='2 2 2 2')
+        self.status_frame.grid(row=1, column=0, sticky='EWS')
+        self._status_msg.set('')
+        status = ttk.Label(self.status_frame, textvariable=self._status_msg, anchor=W)
+        status.grid(row=0, column=0, sticky='EW')
 
     def getfilepath(self):
         self._filepath.set(tk.filedialog.askopenfilename())
