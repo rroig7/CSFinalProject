@@ -77,7 +77,7 @@ class AudioAnalyzerApp:
     def getwavdata(self,audio_file):
         wav_file = wave.open(audio_file, 'rb')
         audio_data = wav_file.readframes(wav_file.getnframes())
-        return np.frombuffer(audio_data, np.int16
+        return np.frombuffer(audio_data, np.int16)
 
     def getfilepath(self):
         self._filepath.set(tk.filedialog.askopenfilename())
