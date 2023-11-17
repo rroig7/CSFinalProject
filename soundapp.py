@@ -11,7 +11,6 @@ import matplotlib.figure as Figure
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
 import numpy as np
 
-
 # returns raw audio data from wav file
 def getwavdata(audio_file):
     wav_file = wave.open(audio_file, 'rb')
@@ -79,6 +78,8 @@ def converttowav(audio_file_path):
         sample_width=audio_file.sample_width,
         channels=audio_file.channels
     )
+    # sets channels to 1 in case of multiple channels
+    wav_audio.set_channels(1)
 
     return wav_audio
 
@@ -91,16 +92,16 @@ def extractdata():
     time_duration = len(raw_data) / wav_audio.frame_rate
     wav_audio_time_length = np.linspace(0, time_duration, len(raw_data))
 
-    print(wav_audio_time_length)
-
     time_min = time_duration // 60
     time_sec = round(time_duration % (24 * 3600), 2)
 
     time_string = f'{time_min} minutes {time_sec} seconds'
     print(time_string)
+    print(getmetadata(_filepath.get()))
 
 
 def createplot():
+
     # data = getwavdata(_filepath.get())
 
     data = np.frombuffer(converttowav(_filepath.get()).raw_data, dtype=np.int16)
@@ -113,6 +114,17 @@ def createplot():
     canvas.draw()
     canvas.get_tk_widget().grid(column=0, row=3)
 
+
+def getmetadata(file_path):
+
+    metadata = {
+        'Title': file_path.split('/')[-1],
+        'Latest Modification Time': datetime.datetime.fromtimestamp(os.path.getmtime(file_path)),
+        'File Creation Date': datetime.datetime.fromtimestamp(os.path.getctime(file_path)).date(),
+        'File Size': os.path.getsize(file_path)
+    }
+
+    return metadata
 
 if __name__ == "__main__":  # execute logic if run directly
     _root = Tk()  # instantiate instance of Tk class
@@ -145,7 +157,7 @@ if __name__ == "__main__":  # execute logic if run directly
 
     _choose_file_label = ttk.Label(
         _load_file_frame,
-        text='Please input the path file you would like to analyze: ',
+        text='Please input the path of the file you wish to analyze:',
     )
     _choose_file_label.grid(
         column=0,
