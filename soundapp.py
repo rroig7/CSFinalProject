@@ -1,3 +1,4 @@
+import datetime
 import os.path
 from tkinter import *
 from tkinter import ttk, filedialog, messagebox
@@ -7,9 +8,8 @@ from pydub import AudioSegment
 import wave
 import matplotlib.pyplot as plt
 import matplotlib.figure as Figure
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
 import numpy as np
-import struct
 
 
 class AudioAnalyzerApp:
@@ -24,6 +24,7 @@ class AudioAnalyzerApp:
         self.data_file_frame = None
 
         self._filepath = StringVar()
+        self.str_filepath = None
         self._status_msg = StringVar()
 
         self.create_widgets()
@@ -73,6 +74,11 @@ class AudioAnalyzerApp:
         status = ttk.Label(self.status_frame, textvariable=self._status_msg, anchor=W)
         status.grid(row=0, column=0, sticky='EW')
 
+    def getwavdata(self,audio_file):
+        wav_file = wave.open(audio_file, 'rb')
+        audio_data = wav_file.readframes(wav_file.getnframes())
+        return np.frombuffer(audio_data, np.int16
+
     def getfilepath(self):
         self._filepath.set(tk.filedialog.askopenfilename())
 
@@ -91,48 +97,75 @@ class AudioAnalyzerApp:
         self._status_msg.set(msg)
 
     def converttowav(self, audio_file_path):
-        audio_file = AudioSegment.from_file(
-            audio_file_path,
-            format=os.path.splitext(audio_file_path)[-1].strip('.')
-        )
+        if not os.path.isfile(audio_file_path):
+            self.sb(f"Error: File {audio_file_path} not found.")
+            return
 
-        wav_data = audio_file.raw_data
-        self.wav_audio = AudioSegment(
-            wav_data,
-            frame_rate=audio_file.frame_rate,
-            sample_width=audio_file.sample_width,
-            channels=audio_file.channels
-        )
-        self.wav_audio.set_channels(1)
+        supported_extensions = ['.mp3', '.wav', '.ogg']  # audio extensions
+        file_extension = os.path.splitext(audio_file_path)[1].lower()
+
+        if file_extension not in supported_extensions:
+            self.sb(f"Error: Unsupported file format ({file_extension}). Supported formats are {supported_extensions}.")
+            return
+        else:
+            try:
+                audio_file = AudioSegment.from_file(
+                    audio_file_path,
+                    format=os.path.splitext(audio_file_path)[-1].strip('.')
+                )
+
+                wav_data = audio_file.raw_data
+                self.wav_audio = AudioSegment(
+                    wav_data,
+                    frame_rate=audio_file.frame_rate,
+                    sample_width=audio_file.sample_width,
+                    channels=audio_file.channels
+                )
+                self.wav_audio.set_channels(1)
+            except Exception as e:
+                self.sb(f"Error during conversion: {e}")
 
     def extractdata(self):
-        if (self.wav_audio == None):
+        if self.wav_audio is not None:
             raw_data = np.frombuffer(self.wav_audio.raw_data, dtype=np.int16)
 
             time_duration = len(raw_data) / self.wav_audio.frame_rate
             wav_audio_time_length = np.linspace(0, time_duration, len(raw_data))
-
-            print(wav_audio_time_length)
 
             time_min = time_duration // 60
             time_sec = round(time_duration % (24 * 3600), 2)
 
             time_string = f'{time_min} minutes {time_sec} seconds'
             print(time_string)
+            print(self.getmetadata())
         else:
             self.sb(f'Make sure to press load')
 
     def createplot(self):
+        if self.wav_audio is not None:
+            data = np.frombuffer(self.wav_audio.raw_data, dtype=np.int16)
 
-        data = np.frombuffer(self.wav_audio.raw_data, dtype=np.int16)
+            fig, ax = plt.subplots(figsize=(5, 2))
+            ax.plot(data)
+            ax.set_title('Waveform of ' + self._filepath.get().split('/')[-1])
 
-        fig, ax = plt.subplots(figsize=(5, 2))
-        ax.plot(data)
-        ax.set_title('Waveform of ' + self._filepath.get().split('/')[-1])
+            canvas = FigureCanvasTkAgg(fig, master=self.data_file_frame)
+            canvas.draw()
+            canvas.get_tk_widget().grid(column=0, row=3)
+        else:
+            self.sb(f'Make sure to press load')
 
-        canvas = FigureCanvasTkAgg(fig, master=self.data_file_frame)
-        canvas.draw()
-        canvas.get_tk_widget().grid(column=0, row=3)
+
+    def getmetadata(self):
+        self.str_filepath = self._filepath.get()
+        metadata = {
+            'Title': self.str_filepath.split('/')[-1],
+            'Latest Modification Time': datetime.datetime.fromtimestamp(os.path.getmtime(self.str_filepath)),
+            'File Creation Date': datetime.datetime.fromtimestamp(os.path.getctime(self.str_filepath)).date(),
+            'File Size': os.path.getsize(self.str_filepath)
+        }
+
+        return metadata
 
 
 if __name__ == "__main__":
