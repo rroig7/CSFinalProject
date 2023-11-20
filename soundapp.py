@@ -7,7 +7,7 @@ from pathlib import Path
 from pydub import AudioSegment
 import wave
 import matplotlib.pyplot as plt
-import matplotlib.figure as Figure
+from scipy.fft import fft
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg)
 import numpy as np
 
@@ -22,6 +22,7 @@ class AudioAnalyzerApp:
         self.choose_file_text = None
         self.wav_audio = None
         self.data_file_frame = None
+        self.raw_data = None
 
         self._filepath = StringVar()
         self.str_filepath = None
@@ -31,7 +32,7 @@ class AudioAnalyzerApp:
 
     def create_widgets(self):
         # master is essentially the same as root in tkinter
-        self.master.geometry('800x500')
+        self.master.geometry('1000x700')
         self.master.rowconfigure(0, weight=1)
         self.master.columnconfigure(0, weight=1)
 
@@ -122,31 +123,36 @@ class AudioAnalyzerApp:
                     channels=audio_file.channels
                 )
                 self.wav_audio.set_channels(1)
+                self.raw_data = np.frombuffer(self.wav_audio.raw_data, dtype=np.int16)
             except Exception as e:
                 self.sb(f"Error during conversion: {e}")
 
     def extracttime(self):
         if self.wav_audio is not None:
-            raw_data = np.frombuffer(self.wav_audio.raw_data, dtype=np.int16)
-
-            time_duration = len(raw_data) / self.wav_audio.frame_rate
-            wav_audio_time_length = np.linspace(0, time_duration, len(raw_data))
+            time_duration = len(self.raw_data) / self.wav_audio.frame_rate
+            wav_audio_time_length = np.linspace(0, time_duration, len(self.raw_data))
 
             time_min = time_duration // 60
             time_sec = round(time_duration % (24 * 3600), 2)
 
             time_string = f'{time_min} minutes {time_sec} seconds'
-            self.sb(time_string)
+            self.sb(f"Time is: {time_string}")
+            # Extract raw audio data
+            # Calculate the Fast Fourier Transform (FFT)
+            fft_result = fft(self.raw_data)
         else:
             self.sb(f'Make sure to press load')
 
     def createplot(self):
         if self.wav_audio is not None:
-            data = np.frombuffer(self.wav_audio.raw_data, dtype=np.int16)
+            # Calculate time values
+            time_values = np.arange(len(self.raw_data)) / self.wav_audio.frame_rate
 
-            fig, ax = plt.subplots(figsize=(5, 2))
-            ax.plot(data)
+            fig, ax = plt.subplots(figsize=(7, 4))
+            ax.plot(time_values, self.raw_data)
             ax.set_title('Waveform of ' + self._filepath.get().split('/')[-1])
+            ax.set_xlabel('Time (seconds)')
+            ax.set_ylabel('Amplitude')
 
             canvas = FigureCanvasTkAgg(fig, master=self.data_file_frame)
             canvas.draw()
