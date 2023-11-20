@@ -8,7 +8,7 @@ from pydub import AudioSegment
 import wave
 import matplotlib.pyplot as plt
 import matplotlib.figure as Figure
-from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
+from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg)
 import numpy as np
 
 
@@ -65,8 +65,8 @@ class AudioAnalyzerApp:
         show_plot = ttk.Button(self.data_file_frame, text='Plot', command=self.createplot)
         show_plot.grid(column=0, row=1, sticky='WN')
 
-        show_data = ttk.Button(self.data_file_frame, text='Data', command=self.extractdata)
-        show_data.grid(column=0, row=2, sticky='WN')
+        show_time = ttk.Button(self.data_file_frame, text='Time', command=self.extracttime)
+        show_time.grid(column=0, row=2, sticky='WN')
 
         self.status_frame = ttk.Frame(self.master, relief='sunken', padding='2 2 2 2')
         self.status_frame.grid(row=1, column=0, sticky='EWS')
@@ -77,7 +77,7 @@ class AudioAnalyzerApp:
     def getwavdata(self,audio_file):
         wav_file = wave.open(audio_file, 'rb')
         audio_data = wav_file.readframes(wav_file.getnframes())
-        return np.frombuffer(audio_data, np.int16
+        return np.frombuffer(audio_data, np.int16)
 
     def getfilepath(self):
         self._filepath.set(tk.filedialog.askopenfilename())
@@ -125,7 +125,7 @@ class AudioAnalyzerApp:
             except Exception as e:
                 self.sb(f"Error during conversion: {e}")
 
-    def extractdata(self):
+    def extracttime(self):
         if self.wav_audio is not None:
             raw_data = np.frombuffer(self.wav_audio.raw_data, dtype=np.int16)
 
@@ -136,8 +136,7 @@ class AudioAnalyzerApp:
             time_sec = round(time_duration % (24 * 3600), 2)
 
             time_string = f'{time_min} minutes {time_sec} seconds'
-            print(time_string)
-            print(self.getmetadata())
+            self.sb(time_string)
         else:
             self.sb(f'Make sure to press load')
 
