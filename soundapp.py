@@ -10,6 +10,8 @@ import matplotlib.pyplot as plt
 import matplotlib.figure as Figure
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg)
 import numpy as np
+from scipy.io import wavfile
+from scipy.signal import find_peaks
 
 
 class AudioAnalyzerApp:
@@ -31,7 +33,7 @@ class AudioAnalyzerApp:
 
     def create_widgets(self):
         # master is essentially the same as root in tkinter
-        self.master.geometry('800x500')
+        self.master.geometry('1000x700')
         self.master.rowconfigure(0, weight=1)
         self.master.columnconfigure(0, weight=1)
 
@@ -144,13 +146,18 @@ class AudioAnalyzerApp:
         if self.wav_audio is not None:
             data = np.frombuffer(self.wav_audio.raw_data, dtype=np.int16)
 
-            fig, ax = plt.subplots(figsize=(5, 2))
+            fig, ax = plt.subplots(figsize=(7,4), label='')
             ax.plot(data)
             ax.set_title('Waveform of ' + self._filepath.get().split('/')[-1])
+            ax.set_xlabel('Time [s]')
+            ax.set_ylabel('Frequency [Hz]')
+            ax.set_autoscale_on = True
+
 
             canvas = FigureCanvasTkAgg(fig, master=self.data_file_frame)
             canvas.draw()
             canvas.get_tk_widget().grid(column=0, row=3)
+            self.gethighestresonance()
         else:
             self.sb(f'Make sure to press load')
 
@@ -165,6 +172,38 @@ class AudioAnalyzerApp:
         }
 
         return metadata
+
+    def getpositivefrequencies(self, arr) -> list:
+        for i in range(len(arr)):
+            if arr[i] < 0:
+                arr.pop()
+        return arr
+
+
+    def gethighestresonance(self):
+
+        raw_data = np.frombuffer(self.wav_audio.raw_data, dtype=np.int16)
+
+'''        print(np.max(raw_data))
+        print(np.min(self.getpositivefrequencies(raw_data)))
+        print(np.mean(np.abs(raw_data)))
+
+        sample_rate = wavfile.read(self._filepath.get())
+
+        frequencies = np.fft.fftfreq(len(self.wav_audio.raw_data), 1 / sample_rate[0])
+
+        amplitudes = np.fft.fft(self.wav_audio.raw_data)
+
+        pos_freq, pos_amps = np.abs(frequencies), np.abs(amplitudes)
+
+        peaks = find_peaks(pos_amps, height=0)
+
+        highest_resonance_freq = pos_freq[peaks[np.argmax(pos_amps[peaks])]]
+
+        print(highest_resonance_freq)'''
+
+
+
 
 
 if __name__ == "__main__":
