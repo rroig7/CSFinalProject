@@ -7,6 +7,7 @@ from pathlib import Path
 from pydub import AudioSegment
 import wave
 import matplotlib.pyplot as plt
+from pydub.utils import mediainfo
 from scipy.fft import fft
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg)
 import numpy as np
@@ -129,7 +130,7 @@ class AudioAnalyzerApp:
 
     def extracttime(self):
         if self.wav_audio is not None:
-            time_duration = len(self.raw_data) / self.wav_audio.frame_rate
+            time_duration = len(self.wav_audio)/1000
             wav_audio_time_length = np.linspace(0, time_duration, len(self.raw_data))
 
             time_min = time_duration // 60
@@ -137,9 +138,8 @@ class AudioAnalyzerApp:
 
             time_string = f'{time_min} minutes {time_sec} seconds'
             self.sb(f"Time is: {time_string}")
-            # Extract raw audio data
-            # Calculate the Fast Fourier Transform (FFT)
-            fft_result = fft(self.raw_data)
+
+            # print(mediainfo(self._filepath.get()))
         else:
             self.sb(f'Make sure to press load')
 
@@ -147,7 +147,6 @@ class AudioAnalyzerApp:
         if self.wav_audio is not None:
             # Calculate time values
             time_values = np.arange(len(self.raw_data)) / self.wav_audio.frame_rate
-
             fig, ax = plt.subplots(figsize=(7, 4))
             ax.plot(time_values, self.raw_data)
             ax.set_title('Waveform of ' + self._filepath.get().split('/')[-1])
