@@ -1,14 +1,20 @@
+
 import datetime
 import os.path
-import tkinter as tk
-import wave
 from tkinter import *
-from tkinter import ttk, filedialog
+from tkinter import ttk, filedialog, messagebox
+import tkinter as tk
+from pathlib import Path
 
-import matplotlib.pyplot as plt
-import numpy as np
-from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg)
+
+import pydub
 from pydub import AudioSegment
+import wave
+import matplotlib.pyplot as plt
+from pydub.utils import mediainfo
+from scipy.fft import fft
+from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg)
+import numpy as np
 
 
 class AudioAnalyzerApp:
@@ -169,40 +175,45 @@ class AudioAnalyzerApp:
 
         return metadata
 
+        def frequencyFinder(self, freqs):
+            for x in freqs:
+                if x < 1000:
+                    break
+            return x
 
-    def frequencyFinder(self, freqs):
-        for x in freqs:
-            if x < 1000:
-                break
-        return x
+        def frequency_check(self, freqs, spectrum):
+            global target_frequency
+            target_frequency = np.where(freqs == target_frequency)[0][0]
+            index_of_frequency = np.where(freqs == target_frequency)[0][0]
+            data_for_frequency = spectrum[index_of_frequency]
+            data_in_db_fun = 10 * np.log10(data_for_frequency)
+            return data_in_db_fun
+            data_in_db = frequency_check()
+            plt.figure(2)
 
-    def frequency_check(self, freqs):
-        global target_frequency
-        target_frequency = np.where(freqs == target_frequency)[0][0]
+            plt.xlabel('Time (s)')
+            plt.ylabel('Power (dB)')
+
+            index_of_max = np.argmax(data_in_db)
+            value_of_max = data_in_db[index_of_max]
+            plt.plot(t[index_of_max], data_)
+
+            sliced_array = data_in_db[index_of_max: ]
+            value_of_max_less_5 = value_of_max - 5
+
+            def find_nearest_value(array, value):
+                array = np.asarray(array)
+                idx = (np.abs(array - value)).argmin()
+                return array[idx]
+
+            value_of_max_less_25 = value_of_max - 25
+            value_of_max_less_25 = find_nearest_value(sliced_array, value_of_max_less_25)
+            index_of_max_less_25 = np.where(data_in_db == value_of_max_less_25)
+            plt.plot(t[index_of_max_less_25], data_in_db[index_of_mass_less_25])
 
 
-    def frequencyFinder(self, freqs):
-        for x in freqs:
-            if x < 1000:
-                break
-        return x
 
-    def frequency_check(self, freqs, spectrum):
-        global target_frequency
-        target_frequency = np.where(freqs == target_frequency)[0][0]
-        index_of_frequency = np.where(freqs == target_frequency)[0][0]
-        data_for_frequency = spectrum[index_of_frequency]
-        data_in_db_fun = 10 * np.log10(data_for_frequency)
-        return data_in_db_fun
-        data_in_db = frequency_check()
-        plt.figure(2)
 
-        plt.xlabel('Time (s)')
-        plt.ylabel('Power (dB)')
-
-        index_of_max = np.argmax(data_in_db)
-        value_of_max = data_in_db[index_of_max]
-        plt.plot(t[index_of_max], data_)
 
 if __name__ == "__main__":
     root = Tk()
