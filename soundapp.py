@@ -11,7 +11,6 @@ from pydub.utils import mediainfo
 from scipy.fft import fft
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg)
 import numpy as np
-from pyexifinfo import get_json
 
 class AudioAnalyzerApp:
     def __init__(self, master):
@@ -25,6 +24,8 @@ class AudioAnalyzerApp:
         self.data_file_frame = None
         self.raw_data = None
         self.frame_amount = None
+        self.highest_resonance = StringVar()
+        self.lowest_resonance = StringVar()
 
         self._filepath = StringVar()
         self.str_filepath = None
@@ -61,7 +62,7 @@ class AudioAnalyzerApp:
         load_file_button.grid(row=1, column=1, sticky='E')
 
         self.data_file_frame = ttk.LabelFrame(self.mainframe, padding='5 5 5 5', text='Data')
-        self.data_file_frame.grid(column=0, row=1, sticky='NEW')
+        self.data_file_frame.grid(column=0, row=2, sticky='NEW')
         self.data_file_frame.rowconfigure(1, weight=1)
         self.data_file_frame.columnconfigure(0, weight=1)
 
@@ -76,6 +77,19 @@ class AudioAnalyzerApp:
         self._status_msg.set('')
         status = ttk.Label(self.status_frame, textvariable=self._status_msg, anchor=W)
         status.grid(row=0, column=0, sticky='EW')
+
+        self.extra_data_file_frame = ttk.LabelFrame(self.mainframe, padding='5 5 5 5', text='Audio Data')
+        self.extra_data_file_frame.grid(column=0, row=1, sticky='NEW')
+        self.extra_data_file_frame.rowconfigure(1, weight=1)
+        self.extra_data_file_frame.columnconfigure(0, weight=1)
+
+        self.highest_resonance.set(f'Frequency of Highest Amplitude: ')
+        self.lowest_resonance.set(f'Frequency of Lowest Amplitude: ')
+
+        self.extra_data_highest_resonance_data = ttk.Label(self.extra_data_file_frame, textvariable=self.highest_resonance)
+        self.extra_data_highest_resonance_data.grid(row=0, column=0, sticky='NW')
+        self.extra_data_lowest_resonance_data = ttk.Label(self.extra_data_file_frame, textvariable=self.lowest_resonance)
+        self.extra_data_lowest_resonance_data.grid(row=1, column=0, sticky='NW')
 
     def getwavdata(self,audio_file):
         wav_file = wave.open(audio_file, 'rb')
@@ -122,12 +136,12 @@ class AudioAnalyzerApp:
                     wav_data,
                     frame_rate=audio_file.frame_rate,
                     sample_width=audio_file.sample_width,
-                    channels=audio_file.channels,
-                    format='.wav'
+                    channels=audio_file.channels
                 )
                 self.frame_amount = len(self.wav_audio.get_array_of_samples())
                 self.wav_audio.set_channels(1)
                 self.raw_data = np.frombuffer(self.wav_audio.raw_data, dtype=np.int16)
+                self.gethighestresonance()
             except Exception as e:
                 self.sb(f"Error during conversion: {e}")
 
@@ -137,8 +151,6 @@ class AudioAnalyzerApp:
             #wav_audio_time_length = np.linspace(0, time_duration, len(self.raw_data))
 
             wav_audio_time_length = self.frame_amount / self.wav_audio.frame_rate
-            print(wav_audio_time_length)
-            print(time_duration)
 
             time_min = time_duration // 60
             time_sec = round(time_duration % (24 * 3600), 2)
@@ -166,8 +178,18 @@ class AudioAnalyzerApp:
         else:
             self.sb(f'Make sure to press load')
 
+    def gethighestresonance(self):
+        samples = np.array(self.wav_audio.get_array_of_samples())
 
-   # def deletemetadata(self):
+        fft_result = np.fft.fft(samples)
+
+        frequencies = np.fft.fftfreq(len(fft_result), d=1/self.wav_audio.frame_rate)
+
+        highest_amplitude_index = np.argmax(np.abs(fft_result))
+        highest_frequency = frequencies[highest_amplitude_index]
+
+        self.highest_resonance.set(f'Frequency of Highest Amplitude: {round(highest_frequency, 2)}')
+        self.lowest_resonance.set(f'Frequency of Lowest Amplitude: {round(abs(frequencies).min(), 2)}')
 
 
 
