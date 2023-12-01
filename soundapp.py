@@ -199,6 +199,15 @@ class AudioAnalyzerApp:
         data_for_frequency = spectrum[index_of_frequency]
         data_in_db_fun = 10 * np.log10(data_for_frequency)
         return data_in_db_fun
+        data_in_db = frequency_check()
+        plt.figure(2)
+
+        plt.xlabel('Time (s)')
+        plt.ylabel('Power (dB)')
+
+        index_of_max = np.argmax(data_in_db)
+        value_of_max = data_in_db[index_of_max]
+
 
 
 if __name__ == "__main__":
