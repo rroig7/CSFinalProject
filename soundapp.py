@@ -175,7 +175,39 @@ class AudioAnalyzerApp:
         metadatasave()
 
 
+    def frequencyFinder(self, freqs):
+        for x in freqs:
+            if x < 1000:
+                break
+        return x
 
+    def frequency_check(self, freqs):
+        global target_frequency
+        target_frequency = np.where(freqs == target_frequency)[0][0]
+
+
+    def frequencyFinder(self, freqs):
+        for x in freqs:
+            if x < 1000:
+                break
+        return x
+
+    def frequency_check(self, freqs, spectrum):
+        global target_frequency
+        target_frequency = np.where(freqs == target_frequency)[0][0]
+        index_of_frequency = np.where(freqs == target_frequency)[0][0]
+        data_for_frequency = spectrum[index_of_frequency]
+        data_in_db_fun = 10 * np.log10(data_for_frequency)
+        return data_in_db_fun
+        data_in_db = frequency_check()
+        plt.figure(2)
+
+        plt.xlabel('Time (s)')
+        plt.ylabel('Power (dB)')
+
+        index_of_max = np.argmax(data_in_db)
+        value_of_max = data_in_db[index_of_max]
+        plt.plot(t[index_of_max], data_)
 
 if __name__ == "__main__":
     root = Tk()
