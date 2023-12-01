@@ -7,12 +7,11 @@ from pathlib import Path
 from pydub import AudioSegment
 import wave
 import matplotlib.pyplot as plt
-import matplotlib.figure as Figure
+from pydub.utils import mediainfo
+from scipy.fft import fft
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg)
 import numpy as np
-from scipy.io import wavfile
-from scipy.signal import find_peaks
-
+from pyexifinfo import get_json
 
 class AudioAnalyzerApp:
     def __init__(self, master):
@@ -24,6 +23,8 @@ class AudioAnalyzerApp:
         self.choose_file_text = None
         self.wav_audio = None
         self.data_file_frame = None
+        self.raw_data = None
+        self.frame_amount = None
 
         self._filepath = StringVar()
         self.str_filepath = None
@@ -121,86 +122,52 @@ class AudioAnalyzerApp:
                     wav_data,
                     frame_rate=audio_file.frame_rate,
                     sample_width=audio_file.sample_width,
-                    channels=audio_file.channels
+                    channels=audio_file.channels,
+                    format='.wav'
                 )
+                self.frame_amount = len(self.wav_audio.get_array_of_samples())
                 self.wav_audio.set_channels(1)
+                self.raw_data = np.frombuffer(self.wav_audio.raw_data, dtype=np.int16)
             except Exception as e:
                 self.sb(f"Error during conversion: {e}")
 
     def extracttime(self):
         if self.wav_audio is not None:
-            raw_data = np.frombuffer(self.wav_audio.raw_data, dtype=np.int16)
+            time_duration = len(self.wav_audio)/1000
+            #wav_audio_time_length = np.linspace(0, time_duration, len(self.raw_data))
 
-            time_duration = len(raw_data) / self.wav_audio.frame_rate
-            wav_audio_time_length = np.linspace(0, time_duration, len(raw_data))
+            wav_audio_time_length = self.frame_amount / self.wav_audio.frame_rate
+            print(wav_audio_time_length)
+            print(time_duration)
 
             time_min = time_duration // 60
             time_sec = round(time_duration % (24 * 3600), 2)
 
             time_string = f'{time_min} minutes {time_sec} seconds'
-            self.sb(time_string)
+            self.sb(f"Time is: {time_string}")
+
+            # print(mediainfo(self._filepath.get()))
         else:
             self.sb(f'Make sure to press load')
 
     def createplot(self):
         if self.wav_audio is not None:
-            data = np.frombuffer(self.wav_audio.raw_data, dtype=np.int16)
-
-            fig, ax = plt.subplots(figsize=(7,4), label='')
-            ax.plot(data)
+            # Calculate time values
+            time_values = np.arange(len(self.raw_data)) / self.wav_audio.frame_rate
+            fig, ax = plt.subplots(figsize=(7, 4))
+            ax.plot(time_values, self.raw_data)
             ax.set_title('Waveform of ' + self._filepath.get().split('/')[-1])
-            ax.set_xlabel('Time [s]')
-            ax.set_ylabel('Frequency [Hz]')
-            ax.set_autoscale_on = True
-
+            ax.set_xlabel('Time (seconds)')
+            ax.set_ylabel('Amplitude')
 
             canvas = FigureCanvasTkAgg(fig, master=self.data_file_frame)
             canvas.draw()
             canvas.get_tk_widget().grid(column=0, row=3)
-            self.gethighestresonance()
         else:
             self.sb(f'Make sure to press load')
 
 
-    def getmetadata(self):
-        self.str_filepath = self._filepath.get()
-        metadata = {
-            'Title': self.str_filepath.split('/')[-1],
-            'Latest Modification Time': datetime.datetime.fromtimestamp(os.path.getmtime(self.str_filepath)),
-            'File Creation Date': datetime.datetime.fromtimestamp(os.path.getctime(self.str_filepath)).date(),
-            'File Size': os.path.getsize(self.str_filepath)
-        }
-
-        return metadata
-
-    def getpositivefrequencies(self, arr) -> list:
-        for i in range(len(arr)):
-            if arr[i] < 0:
-                arr.pop()
-        return arr
-
-
-    def gethighestresonance(self):
-
-        raw_data = np.frombuffer(self.wav_audio.raw_data, dtype=np.int16)
-
-'''        print(np.max(raw_data))
-        print(np.min(self.getpositivefrequencies(raw_data)))
-        print(np.mean(np.abs(raw_data)))
-
-        sample_rate = wavfile.read(self._filepath.get())
-
-        frequencies = np.fft.fftfreq(len(self.wav_audio.raw_data), 1 / sample_rate[0])
-
-        amplitudes = np.fft.fft(self.wav_audio.raw_data)
-
-        pos_freq, pos_amps = np.abs(frequencies), np.abs(amplitudes)
-
-        peaks = find_peaks(pos_amps, height=0)
-
-        highest_resonance_freq = pos_freq[peaks[np.argmax(pos_amps[peaks])]]
-
-        print(highest_resonance_freq)'''
+   # def deletemetadata(self):
 
 
 
