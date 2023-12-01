@@ -1,18 +1,14 @@
 import datetime
 import os.path
-from tkinter import *
-from tkinter import ttk, filedialog, messagebox
 import tkinter as tk
-from pathlib import Path
-
-import ffmpeg
-from pydub import AudioSegment
 import wave
+from tkinter import *
+from tkinter import ttk, filedialog
+
 import matplotlib.pyplot as plt
-from pydub.utils import mediainfo
-from scipy.fft import fft
-from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg)
 import numpy as np
+from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg)
+from pydub import AudioSegment
 
 
 class AudioAnalyzerApp:
@@ -171,8 +167,7 @@ class AudioAnalyzerApp:
             'File Size': os.path.getsize(self.str_filepath)
         }
 
-        metadata.clear()
-        metadatasave()
+        return metadata
 
 
     def frequencyFinder(self, freqs):
