@@ -4,7 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="737bc081-4314-4cd7-843a-a7dcc2bbe432" name="Changes" comment="I think frequency" />
+    <list default="true" id="737bc081-4314-4cd7-843a-a7dcc2bbe432" name="Changes" comment="frequency again">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/soundapp.py" beforeDir="false" afterPath="$PROJECT_DIR$/soundapp.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -49,6 +52,7 @@
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "WebServerToolWindowFactoryState": "false",
+    "git-widget-placeholder": "tris-replogle",
     "last_opened_file_path": "C:/Users/tooki/CSFinalProject",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
@@ -72,6 +76,7 @@
       <workItem from="1701457694881" duration="9064000" />
       <workItem from="1701467473837" duration="111000" />
       <workItem from="1701467591252" duration="1330000" />
+      <workItem from="1701468946270" duration="1629000" />
     </task>
     <task id="LOCAL-00001" summary="Merge branch 'master' into tris-replogle">
       <option name="closed" value="true" />
@@ -129,7 +134,23 @@
       <option name="project" value="LOCAL" />
       <updated>1701467033915</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="frequency again">
+      <option name="closed" value="true" />
+      <created>1701469035324</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1701469035324</updated>
+    </task>
+    <task id="LOCAL-00009" summary="frequency again">
+      <option name="closed" value="true" />
+      <created>1701469045820</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1701469045820</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -164,9 +185,10 @@
     <MESSAGE value="frequency check2" />
     <MESSAGE value="frequency check" />
     <MESSAGE value="I think frequency" />
-    <option name="LAST_COMMIT_MESSAGE" value="I think frequency" />
+    <MESSAGE value="frequency again" />
+    <option name="LAST_COMMIT_MESSAGE" value="frequency again" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/CSFinalProject$soundapp.coverage" NAME="soundapp Coverage Results" MODIFIED="1701468832201" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/CSFinalProject$soundapp.coverage" NAME="soundapp Coverage Results" MODIFIED="1701470569345" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>
