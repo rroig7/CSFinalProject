@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="31db7efc-8ab9-4b94-968d-7d4cdf3f1d76" name="Changes" comment="added new frame that shows frequencies of highest amplitudes (still working on lowest)" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="TaskManager">
+    <servers />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="added new frame that shows frequencies of highest amplitudes (still working on lowest)" />
+    <option name="LAST_COMMIT_MESSAGE" value="added new frame that shows frequencies of highest amplitudes (still working on lowest)" />
+  </component>
+</project>
