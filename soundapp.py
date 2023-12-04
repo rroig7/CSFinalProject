@@ -1,13 +1,9 @@
-
 import datetime
 import os.path
 from tkinter import *
 from tkinter import ttk, filedialog, messagebox
 import tkinter as tk
 from pathlib import Path
-
-
-import pydub
 from pydub import AudioSegment
 import wave
 import matplotlib.pyplot as plt
@@ -15,7 +11,6 @@ from pydub.utils import mediainfo
 from scipy.fft import fft
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg)
 import numpy as np
-
 
 class AudioAnalyzerApp:
     def __init__(self, master):
@@ -28,6 +23,9 @@ class AudioAnalyzerApp:
         self.wav_audio = None
         self.data_file_frame = None
         self.raw_data = None
+        self.frame_amount = None
+        self.highest_resonance = StringVar()
+        self.lowest_resonance = StringVar()
 
         self._filepath = StringVar()
         self.str_filepath = None
@@ -64,21 +62,12 @@ class AudioAnalyzerApp:
         load_file_button.grid(row=1, column=1, sticky='E')
 
         self.data_file_frame = ttk.LabelFrame(self.mainframe, padding='5 5 5 5', text='Data')
-        self.data_file_frame.grid(column=0, row=1, sticky='NEW')
+        self.data_file_frame.grid(column=0, row=2, sticky='NEW')
         self.data_file_frame.rowconfigure(1, weight=1)
         self.data_file_frame.columnconfigure(0, weight=1)
 
         show_plot = ttk.Button(self.data_file_frame, text='Plot', command=self.createplot)
         show_plot.grid(column=0, row=1, sticky='WN')
-
-        show_plot = ttk.Button(self.data_file_frame, text='Low Plot', command=self.createplot)
-        show_plot.grid(column=1, row=1, sticky='WN')
-
-        show_plot = ttk.Button(self.data_file_frame, text='Mid Plot', command=self.createplot)
-        show_plot.grid(column=2, row=1, sticky='WN')
-
-        show_plot = ttk.Button(self.data_file_frame, text='High Plot', command=self.createplot)
-        show_plot.grid(column=3, row=1, sticky='WN')
 
         show_time = ttk.Button(self.data_file_frame, text='Time', command=self.extracttime)
         show_time.grid(column=0, row=2, sticky='WN')
@@ -88,6 +77,19 @@ class AudioAnalyzerApp:
         self._status_msg.set('')
         status = ttk.Label(self.status_frame, textvariable=self._status_msg, anchor=W)
         status.grid(row=0, column=0, sticky='EW')
+
+        self.extra_data_file_frame = ttk.LabelFrame(self.mainframe, padding='5 5 5 5', text='Audio Data')
+        self.extra_data_file_frame.grid(column=0, row=1, sticky='NEW')
+        self.extra_data_file_frame.rowconfigure(1, weight=1)
+        self.extra_data_file_frame.columnconfigure(0, weight=1)
+
+        self.highest_resonance.set(f'Frequency of Highest Amplitude: ')
+        self.lowest_resonance.set(f'Frequency of Lowest Amplitude: ')
+
+        self.extra_data_highest_resonance_data = ttk.Label(self.extra_data_file_frame, textvariable=self.highest_resonance)
+        self.extra_data_highest_resonance_data.grid(row=0, column=0, sticky='NW')
+        self.extra_data_lowest_resonance_data = ttk.Label(self.extra_data_file_frame, textvariable=self.lowest_resonance)
+        self.extra_data_lowest_resonance_data.grid(row=1, column=0, sticky='NW')
 
     def getwavdata(self,audio_file):
         wav_file = wave.open(audio_file, 'rb')
@@ -129,6 +131,9 @@ class AudioAnalyzerApp:
                     format=os.path.splitext(audio_file_path)[-1].strip('.')
                 )
 
+
+
+
                 wav_data = audio_file.raw_data
                 self.wav_audio = AudioSegment(
                     wav_data,
@@ -136,15 +141,19 @@ class AudioAnalyzerApp:
                     sample_width=audio_file.sample_width,
                     channels=audio_file.channels
                 )
+                self.frame_amount = len(self.wav_audio.get_array_of_samples())
                 self.wav_audio.set_channels(1)
                 self.raw_data = np.frombuffer(self.wav_audio.raw_data, dtype=np.int16)
+                self.gethighestresonance()
             except Exception as e:
                 self.sb(f"Error during conversion: {e}")
 
     def extracttime(self):
         if self.wav_audio is not None:
             time_duration = len(self.wav_audio)/1000
-            wav_audio_time_length = np.linspace(0, time_duration, len(self.raw_data))
+            #wav_audio_time_length = np.linspace(0, time_duration, len(self.raw_data))
+
+            wav_audio_time_length = self.frame_amount / self.wav_audio.frame_rate
 
             time_min = time_duration // 60
             time_sec = round(time_duration % (24 * 3600), 2)
@@ -172,17 +181,19 @@ class AudioAnalyzerApp:
         else:
             self.sb(f'Make sure to press load')
 
+    def gethighestresonance(self):
+        samples = np.array(self.wav_audio.get_array_of_samples())
 
-    def getmetadata(self):
-        self.str_filepath = self._filepath.get()
-        metadata = {
-            'Title': self.str_filepath.split('/')[-1],
-            'Latest Modification Time': datetime.datetime.fromtimestamp(os.path.getmtime(self.str_filepath)),
-            'File Creation Date': datetime.datetime.fromtimestamp(os.path.getctime(self.str_filepath)).date(),
-            'File Size': os.path.getsize(self.str_filepath)
-        }
+        fft_result = np.fft.fft(samples)
 
-        return metadata
+        frequencies = np.fft.fftfreq(len(fft_result), d=1/self.wav_audio.frame_rate)
+
+        highest_amplitude_index = np.argmax(np.abs(fft_result))
+        highest_frequency = frequencies[highest_amplitude_index]
+
+        self.highest_resonance.set(f'Frequency of Highest Amplitude: {round(highest_frequency, 2)}')
+        self.lowest_resonance.set(f'Frequency of Lowest Amplitude: {round(abs(frequencies).min(), 2)}')
+
 
 
 
