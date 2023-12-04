@@ -1,14 +1,15 @@
 import datetime
 import os.path
 from tkinter import *
-from tkinter import ttk, filedialog, messagebox
+from tkinter import ttk, filedialog
 import tkinter as tk
-from pathlib import Path
+from matplotlib.figure import Figure
 from pydub import AudioSegment
 import wave
 import matplotlib.pyplot as plt
-import matplotlib.figure as Figure
-from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
+from pydub.utils import mediainfo
+from scipy.fft import fft
+from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg)
 import numpy as np
 
 
@@ -22,6 +23,7 @@ class AudioAnalyzerApp:
         self.choose_file_text = None
         self.wav_audio = None
         self.data_file_frame = None
+        self.raw_data = None
 
         self._filepath = StringVar()
         self.str_filepath = None
@@ -31,7 +33,7 @@ class AudioAnalyzerApp:
 
     def create_widgets(self):
         # master is essentially the same as root in tkinter
-        self.master.geometry('800x500')
+        self.master.geometry('1000x700')
         self.master.rowconfigure(0, weight=1)
         self.master.columnconfigure(0, weight=1)
 
@@ -65,8 +67,11 @@ class AudioAnalyzerApp:
         show_plot = ttk.Button(self.data_file_frame, text='Plot', command=self.createplot)
         show_plot.grid(column=0, row=1, sticky='WN')
 
-        show_data = ttk.Button(self.data_file_frame, text='Data', command=self.extractdata)
-        show_data.grid(column=0, row=2, sticky='WN')
+        show_time = ttk.Button(self.data_file_frame, text='Time', command=self.extracttime)
+        show_time.grid(column=0, row=2, sticky='WN')
+
+        show_plot2 = ttk.Button(self.data_file_frame, text='Plot Frequency', command=self.PlotFrequency)
+        show_plot2.grid(column=0, row=3, sticky='WN')
 
         self.status_frame = ttk.Frame(self.master, relief='sunken', padding='2 2 2 2')
         self.status_frame.grid(row=1, column=0, sticky='EWS')
@@ -74,7 +79,7 @@ class AudioAnalyzerApp:
         status = ttk.Label(self.status_frame, textvariable=self._status_msg, anchor=W)
         status.grid(row=0, column=0, sticky='EW')
 
-    def getwavdata(self,audio_file):
+    def getwavdata(self, audio_file):
         wav_file = wave.open(audio_file, 'rb')
         audio_data = wav_file.readframes(wav_file.getnframes())
         return np.frombuffer(audio_data, np.int16)
@@ -122,50 +127,58 @@ class AudioAnalyzerApp:
                     channels=audio_file.channels
                 )
                 self.wav_audio.set_channels(1)
+                self.raw_data = np.frombuffer(self.wav_audio.raw_data, dtype=np.int16)
             except Exception as e:
-                self.sb(f"Error during conversion: {e}")
+                # self.sb(f"Error during conversion: {e}")
+                print(f"Error: {e}")
 
-    def extractdata(self):
+    def extracttime(self):
         if self.wav_audio is not None:
-            raw_data = np.frombuffer(self.wav_audio.raw_data, dtype=np.int16)
-
-            time_duration = len(raw_data) / self.wav_audio.frame_rate
-            wav_audio_time_length = np.linspace(0, time_duration, len(raw_data))
+            time_duration = len(self.wav_audio) / 1000
 
             time_min = time_duration // 60
-            time_sec = round(time_duration % (24 * 3600), 2)
+            time_sec = round(time_duration % 60)
 
             time_string = f'{time_min} minutes {time_sec} seconds'
-            print(time_string)
-            print(self.getmetadata())
+            self.sb(f"Time is: {time_string}")
         else:
             self.sb(f'Make sure to press load')
 
     def createplot(self):
         if self.wav_audio is not None:
-            data = np.frombuffer(self.wav_audio.raw_data, dtype=np.int16)
+            samples = np.array(self.wav_audio.get_array_of_samples())
 
-            fig, ax = plt.subplots(figsize=(5, 2))
-            ax.plot(data)
-            ax.set_title('Waveform of ' + self._filepath.get().split('/')[-1])
+            # Calculate time values for x-axis
+            duration_in_sec = len(self.wav_audio) / 1000
+            time_values = np.linspace(0, duration_in_sec, num=len(samples))
 
-            canvas = FigureCanvasTkAgg(fig, master=self.data_file_frame)
+            # Plot the waveform
+            figure = Figure(figsize=(7, 4), dpi=100)
+            plot = figure.add_subplot(1, 1, 1)
+            plot.plot(time_values, samples)
+            plot.set_xlabel("Time (seconds)")
+            plot.set_ylabel("Amplitude")
+            plot.set_title("Audio Waveform")
+
+            canvas = FigureCanvasTkAgg(figure, master=self.data_file_frame)
             canvas.draw()
             canvas.get_tk_widget().grid(column=0, row=3)
         else:
             self.sb(f'Make sure to press load')
 
+    def PlotFrequency(self):
+        if self.wav_audio is not None:
+            # Convert AudioSegment to NumPy array
+            samples = np.array(self.wav_audio.get_array_of_samples())
 
-    def getmetadata(self):
-        self.str_filepath = self._filepath.get()
-        metadata = {
-            'Title': self.str_filepath.split('/')[-1],
-            'Latest Modification Time': datetime.datetime.fromtimestamp(os.path.getmtime(self.str_filepath)),
-            'File Creation Date': datetime.datetime.fromtimestamp(os.path.getctime(self.str_filepath)).date(),
-            'File Size': os.path.getsize(self.str_filepath)
-        }
+            # Find the index of the maximum amplitude
+            max_amplitude_index = np.argmax(np.abs(samples))
 
-        return metadata
+            # Calculate time corresponding to the index
+            time_of_max_amplitude = max_amplitude_index / self.wav_audio.frame_rate
+            self.sb(f"Highest amplitude happened at {time_of_max_amplitude}")
+        else:
+            self.sb(f'Make sure to press load')
 
 
 if __name__ == "__main__":
