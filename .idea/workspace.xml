@@ -4,16 +4,296 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="31db7efc-8ab9-4b94-968d-7d4cdf3f1d76" name="Changes" comment="added new frame that shows frequencies of highest amplitudes (still working on lowest)" />
+    <list default="true" id="6ebac40b-ffe6-48a4-a7be-805d589e8014" name="Changes" comment="added new frame that shows frequencies of highest amplitudes (still working on lowest)">
+      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+  <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="mynor-mendez" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="RESET_MODE" value="HARD" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;rroig7&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">
+    <option name="selectedUrlAndAccountId">
+      <UrlAndAccount>
+        <option name="accountId" value="6edc61d3-0af3-4985-9e68-002a7019cd74" />
+        <option name="url" value="https://github.com/rroig7/CSFinalProject" />
+      </UrlAndAccount>
+    </option>
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 0
+}</component>
+  <component name="ProjectId" id="2Y82rmBTwK4pycpqfbCu3VaoG8j" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;reinaldo-roig&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/rroig/OneDrive/PC/Documents/PycharmProjects/CSFinalProject&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
+  }
+}</component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="6ebac40b-ffe6-48a4-a7be-805d589e8014" name="Changes" comment="" />
+      <created>1699893086749</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1699893086749</updated>
+    </task>
+    <task id="LOCAL-00001" summary="testing bracnh">
+      <option name="closed" value="true" />
+      <created>1699893576620</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1699893576621</updated>
+    </task>
+    <task id="LOCAL-00002" summary="- testing">
+      <option name="closed" value="true" />
+      <created>1699898655781</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1699898655781</updated>
+    </task>
+    <task id="LOCAL-00003" summary="- testing removed">
+      <option name="closed" value="true" />
+      <created>1699898723643</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1699898723643</updated>
+    </task>
+    <task id="LOCAL-00004" summary="Added file choosing frame, &#10;&#10;added load button to save filepath to _filepath variable">
+      <option name="closed" value="true" />
+      <created>1699907035724</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1699907035724</updated>
+    </task>
+    <task id="LOCAL-00005" summary="RESIZING WOOHOOO">
+      <option name="closed" value="true" />
+      <created>1699909490986</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1699909490986</updated>
+    </task>
+    <task id="LOCAL-00006" summary="RESIZING WOOHOOO">
+      <option name="closed" value="true" />
+      <created>1699909666047</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1699909666047</updated>
+    </task>
+    <task id="LOCAL-00007" summary="RESIZING WOOHOOO">
+      <option name="closed" value="true" />
+      <created>1699909858817</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1699909858817</updated>
+    </task>
+    <task id="LOCAL-00008" summary="yuh">
+      <option name="closed" value="true" />
+      <created>1699910228098</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1699910228098</updated>
+    </task>
+    <task id="LOCAL-00009" summary="added test wav&#10;&#10;created plot button">
+      <option name="closed" value="true" />
+      <created>1699915408009</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1699915408009</updated>
+    </task>
+    <task id="LOCAL-00010" summary="graph now shows up in the app rather than creating a new window!">
+      <option name="closed" value="true" />
+      <created>1699923099490</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1699923099490</updated>
+    </task>
+    <task id="LOCAL-00011" summary="graph now shows up in the app rather than creating a new window!">
+      <option name="closed" value="true" />
+      <created>1699926810321</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1699926810321</updated>
+    </task>
+    <task id="LOCAL-00012" summary="new converttowav function, this one works better&#10;&#10;also changed createplot function so you should be able to use any audio file type and it will be converted automatically within python.">
+      <option name="closed" value="true" />
+      <created>1699930825550</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1699930825550</updated>
+    </task>
+    <task id="LOCAL-00013" summary="data button prints the time of the file into the console&#10;&#10;still gotta work on it though">
+      <option name="closed" value="true" />
+      <created>1699975432334</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1699975432334</updated>
+    </task>
+    <task id="LOCAL-00014" summary="data button prints the time of the file into the console&#10;&#10;still gotta work on it though">
+      <option name="closed" value="true" />
+      <created>1699979246891</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1699979246891</updated>
+    </task>
+    <task id="LOCAL-00015" summary="moving">
+      <option name="closed" value="true" />
+      <created>1700252068139</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1700252068139</updated>
+    </task>
+    <task id="LOCAL-00016" summary="moving">
+      <option name="closed" value="true" />
+      <created>1700514319056</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1700514319056</updated>
+    </task>
+    <task id="LOCAL-00017" summary="working on getting highest resonance">
+      <option name="closed" value="true" />
+      <created>1700520139232</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1700520139232</updated>
+    </task>
+    <task id="LOCAL-00018" summary="yeet">
+      <option name="closed" value="true" />
+      <created>1701462199543</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1701462199543</updated>
+    </task>
+    <task id="LOCAL-00019" summary="save merge">
+      <option name="closed" value="true" />
+      <created>1701464994753</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1701464994753</updated>
+    </task>
+    <task id="LOCAL-00020" summary="added new frame that shows frequencies of highest amplitudes (still working on lowest)">
+      <option name="closed" value="true" />
+      <created>1701471605529</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1701471605529</updated>
+    </task>
+    <option name="localTasksCounter" value="21" />
     <servers />
   </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="RECENT_FILTERS">
+      <map>
+        <entry key="Branch">
+          <value>
+            <list>
+              <RecentGroup>
+                <option name="FILTER_VALUES">
+                  <option value="reinaldo-roig" />
+                </option>
+              </RecentGroup>
+              <RecentGroup>
+                <option name="FILTER_VALUES">
+                  <option value="origin/mynor-mendez" />
+                </option>
+              </RecentGroup>
+              <RecentGroup>
+                <option name="FILTER_VALUES">
+                  <option value="mynor-mendez" />
+                </option>
+              </RecentGroup>
+              <RecentGroup>
+                <option name="FILTER_VALUES">
+                  <option value="HEAD" />
+                </option>
+              </RecentGroup>
+            </list>
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="reinaldo-roig" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
   <component name="VcsManagerConfiguration">
+    <MESSAGE value="testing bracnh" />
+    <MESSAGE value="- testing" />
+    <MESSAGE value="- testing removed" />
+    <MESSAGE value="Added file choosing frame, &#10;&#10;added load button to save filepath to _filepath variable" />
+    <MESSAGE value="RESIZING WOOHOOO" />
+    <MESSAGE value="yuh" />
+    <MESSAGE value="added test wav&#10;&#10;created plot button" />
+    <MESSAGE value="graph now shows up in the app rather than creating a new window!" />
+    <MESSAGE value="new converttowav function, this one works better&#10;&#10;also changed createplot function so you should be able to use any audio file type and it will be converted automatically within python." />
+    <MESSAGE value="data button prints the time of the file into the console&#10;&#10;still gotta work on it though" />
+    <MESSAGE value="moving" />
+    <MESSAGE value="working on getting highest resonance" />
+    <MESSAGE value="yeet" />
+    <MESSAGE value="save merge" />
     <MESSAGE value="added new frame that shows frequencies of highest amplitudes (still working on lowest)" />
     <option name="LAST_COMMIT_MESSAGE" value="added new frame that shows frequencies of highest amplitudes (still working on lowest)" />
   </component>
