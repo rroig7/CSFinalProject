@@ -131,6 +131,9 @@ class AudioAnalyzerApp:
                     format=os.path.splitext(audio_file_path)[-1].strip('.')
                 )
 
+
+
+
                 wav_data = audio_file.raw_data
                 self.wav_audio = AudioSegment(
                     wav_data,
