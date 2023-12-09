@@ -8,20 +8,40 @@ import tkinter as tk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
 from tkinter import filedialog
-from controller import AudioFileController
 from scipy.io import wavfile
-from view import View
-
+import re
 
 class Model:
 
-    def init(self, view):
-        self.view = view
-        sample_rate, data = wavfile.read(self.view.audiofilecontroller.get_file_path())
-        self.spectrum, self.freqs, self.t, self.im = plt.specgram(data, Fs=sample_rate, NFFT=1024, cmap=plt.get_cmap('autumn_r'))
-    def createplot(self):
-        plt.plot()
+    def init(self, filepath):
+        self.__filepath = filepath
 
 
-view = View()
-model = Model()
+
+        # to be extracted once load is called
+        self.sample_rate = None
+        self.length = None
+        self.data = None
+        self.spectrum = None
+        self.freqs = None
+        self.timedata = None
+        self.im = None
+
+
+    @property
+    def filepath(self):
+        return self.__filepath
+
+    @filepath.setter
+    def filepath(self, value):
+        self.__filepath = value
+
+
+    def create_plot(self):
+        plt.plot(self.timedata, self.data[:, 0], label="Left Channel")
+        plt.plot(self.timedata, self.data[:, 1], label="Right Channel")
+
+        plt.legend()
+        plt.xlabel('Time (s)')
+        plt.ylabel('Amplitude')
+        plt.show()
