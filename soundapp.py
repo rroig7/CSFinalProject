@@ -24,6 +24,8 @@ class AudioAnalyzerApp:
         self.wav_audio = None
         self.data_file_frame = None
         self.raw_data = None
+        self.RT60values = None
+        self.count = 0
 
         self._filepath = StringVar()
         self.str_filepath = None
@@ -73,6 +75,9 @@ class AudioAnalyzerApp:
         show_plot2 = ttk.Button(self.data_file_frame, text='Plot Frequency', command=self.PlotFrequency)
         show_plot2.grid(column=0, row=3, sticky='WN')
 
+        show_plot3 = ttk.Button(self.data_file_frame, text='RT60', command=self.RT60)
+        show_plot3.grid(column=0, row=4, sticky='WN')
+
         self.status_frame = ttk.Frame(self.master, relief='sunken', padding='2 2 2 2')
         self.status_frame.grid(row=1, column=0, sticky='EWS')
         self._status_msg.set('')
@@ -118,7 +123,6 @@ class AudioAnalyzerApp:
                     audio_file_path,
                     format=os.path.splitext(audio_file_path)[-1].strip('.')
                 )
-
                 wav_data = audio_file.raw_data
                 self.wav_audio = AudioSegment(
                     wav_data,
@@ -147,7 +151,6 @@ class AudioAnalyzerApp:
     def createplot(self):
         if self.wav_audio is not None:
             samples = np.array(self.wav_audio.get_array_of_samples())
-
             # Calculate time values for x-axis
             duration_in_sec = len(self.wav_audio) / 1000
             time_values = np.linspace(0, duration_in_sec, num=len(samples))
@@ -179,6 +182,75 @@ class AudioAnalyzerApp:
             self.sb(f"Highest amplitude happened at {time_of_max_amplitude}")
         else:
             self.sb(f'Make sure to press load')
+
+    def RT60(self):
+        sample_rate = self.wav_audio.frame_rate
+        data = np.array(self.wav_audio.get_array_of_samples())
+        spectrum, freqs, t, im = plt.specgram(data, Fs=sample_rate, NFFT=1024)
+        plt.close()
+
+        def find_target_frequency(freqs, target_freq):
+            for x in freqs:
+                if x > target_freq:
+                    break
+            return x
+
+        def frequency_check(target_freq):
+            global target_frequency
+            target_frequency = find_target_frequency(freqs, target_freq)
+            index_of_frequency = np.where(freqs == target_frequency)[0][0]
+
+            data_for_frequency = spectrum[index_of_frequency]
+
+            data_in_db_fun = 10 * np.log10(data_for_frequency + 1)
+            return data_in_db_fun
+
+        def find_nearest_value(array, value):
+            array = np.asarray(array)
+            idx = (np.abs(array - value)).argmin()
+            return array[idx]
+
+        loop = {1: 20, 2: 1000, 3: 5000}
+        self.count += 1
+        self.count = self.count % 3 + 1
+        data_in_db = frequency_check(loop[self.count])
+
+        index_of_max = np.argmax(data_in_db)
+        print(f'value of max = {t[index_of_max]}')
+        value_of_max = data_in_db[index_of_max]
+        print(f'value of max = {value_of_max}')
+
+        sliced_array = data_in_db[index_of_max:]
+        value_of_max_less_5 = value_of_max - 5
+        print(f'value of max = {value_of_max_less_5}')
+
+        value_of_max_less_5 = find_nearest_value(sliced_array, value_of_max_less_5)
+        index_of_max_less_5 = np.where(data_in_db == value_of_max_less_5)
+
+        value_of_max_less_25 = value_of_max - 25
+        value_of_max_less_25 = find_nearest_value(sliced_array, value_of_max_less_25)
+        index_of_max_less_25 = np.where(data_in_db == value_of_max_less_25)
+
+        rt20 = (t[index_of_max_less_5] - t[index_of_max_less_25])[0]
+        rt60 = 3 * rt20
+        seconds = np.round(abs(rt20), 3)
+        print(f'The RT60 reverb time at freq {int(target_frequency)} Hz is {seconds} seconds')
+        self.RT60values = {1: None, 2: None, 3: None}
+        self.RT60values[self.count] = seconds
+
+        figure = Figure(figsize=(7, 4), dpi=100)
+        plot = figure.add_subplot(1, 1, 1)
+        plot.plot(t, data_in_db, linewidth=1, alpha=.7, color='#004bc6')
+        plot.plot(t[index_of_max], data_in_db[index_of_max], 'go')
+        plot.plot(t[index_of_max_less_5], data_in_db[index_of_max_less_5], 'yo')
+        plot.plot(t[index_of_max_less_25], data_in_db[index_of_max_less_25], 'ro')
+        plot.set_xlabel("Time (seconds)")
+        plot.set_ylabel("DB")
+        plot.set_title("Audio Waveform")
+
+        canvas = FigureCanvasTkAgg(figure, master=self.data_file_frame)
+        canvas.draw()
+        canvas.get_tk_widget().grid(column=0, row=3)
 
 
 if __name__ == "__main__":
