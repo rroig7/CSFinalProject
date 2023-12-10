@@ -1,5 +1,6 @@
 import datetime
 import os.path
+import scipy
 from tkinter import *
 from tkinter import ttk, filedialog
 import tkinter as tk
@@ -71,22 +72,22 @@ class AudioAnalyzerApp:
         self.data_file_frame.columnconfigure(0, weight=1)
 
         show_plot = ttk.Button(self.data_file_frame, text='Plot Waveform', command=self.createplot)
-        show_plot.grid(column=0, row=1, sticky='WN')
+        show_plot.grid(column=0, row=2, sticky='WN')
 
         show_time = ttk.Button(self.data_file_frame, text='Time', command=self.extracttime)
-        show_time.grid(column=0, row=2, sticky='WN')
+        show_time.grid(column=0, row=3, sticky='WN')
 
         show_plot2 = ttk.Button(self.data_file_frame, text='Resonant frequency ', command=self.PlotFrequency)
-        show_plot2.grid(column=0, row=3, sticky='WN')
+        show_plot2.grid(column=0, row=4, sticky='WN')
 
         show_plot3 = ttk.Button(self.data_file_frame, text='RT60 plot', command=self.RT60)
-        show_plot3.grid(column=0, row=4, sticky='WN')
+        show_plot3.grid(column=0, row=5, sticky='WN')
 
         show_plot3 = ttk.Button(self.data_file_frame, text='Frequency and Amplitude', command=self.Frequency)
         show_plot3.grid(column=0, row=6, sticky='WN')
 
         show_plot3 = ttk.Button(self.data_file_frame, text='RT60 Average', command=self.RT60avg)
-        show_plot3.grid(column=0, row=5, sticky='WN')
+        show_plot3.grid(column=0, row=7, sticky='WN')
 
         self.status_frame = ttk.Frame(self.master, relief='sunken', padding='2 2 2 2')
         self.status_frame.grid(row=1, column=0, sticky='EWS')
@@ -94,16 +95,9 @@ class AudioAnalyzerApp:
         status = ttk.Label(self.status_frame, textvariable=self._status_msg, anchor=W)
         status.grid(row=0, column=0, sticky='EW')
 
-        self.extra_data_file_frame = ttk.LabelFrame(self.mainframe, padding='5 5 5 5', text='Audio Data')
-        self.extra_data_file_frame.grid(column=0, row=1, sticky='NEW')
-        self.extra_data_file_frame.rowconfigure(1, weight=1)
-        self.extra_data_file_frame.columnconfigure(0, weight=1)
+        self.highest_resonance.set('')
 
-        self.highest_resonance.set(f'Frequency of Highest Amplitude: ')
 
-        self.extra_data_highest_resonance_data = ttk.Label(self.extra_data_file_frame,
-                                                           textvariable=self.highest_resonance)
-        self.extra_data_highest_resonance_data.grid(row=0, column=0, sticky='NW')
 
     def getwavdata(self, audio_file):
         wav_file = wave.open(audio_file, 'rb')
@@ -193,24 +187,12 @@ class AudioAnalyzerApp:
             self.sb(f'Make sure to press load')
 
     def gethighestresonance(self):
-        # samples = np.array(self.wav_audio.get_array_of_samples())
-        #
-        # fft_result = np.fft.fft(samples)
-        #
-        # frequencies = np.fft.fftfreq(len(fft_result), d=1 / self.wav_audio.frame_rate)
-        #
-        #
-        #
-        # highest_amplitude_index = np.argmax(np.abs(fft_result))
-        # highest_frequency = frequencies[highest_amplitude_index]
-        #
-        # self.highest_resonance.set(f'Frequency of Highest Amplitude: {round(highest_frequency, 2)}')
 
         data = np.array(self.wav_audio.get_array_of_samples())
 
         frequencies, power = scipy.signal.welch(data, self.wav_audio.frame_rate, nperseg=4096)
         dominant_frequency = frequencies[np.argmax(power)]
-        self.highest_resonance.set(f'Frequency of Highest Amplitude: {round(dominant_frequency, 2)}')
+        self.highest_resonance.set(str(dominant_frequency))
 
 
     def PlotFrequency(self):
@@ -223,7 +205,8 @@ class AudioAnalyzerApp:
 
             # Calculate time corresponding to the index
             time_of_max_amplitude = max_amplitude_index / self.wav_audio.frame_rate
-            self.sb(f"Highest amplitude happened at {time_of_max_amplitude}")
+            self.gethighestresonance()
+            self.sb(f"Highest amplitude happened at {round(time_of_max_amplitude, 2)} and the resonant frequency was {round(float(self.highest_resonance.get()), 2)}")
         else:
             self.sb(f'Make sure to press load')
 
