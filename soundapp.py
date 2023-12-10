@@ -4,13 +4,17 @@ from tkinter import *
 from tkinter import ttk, filedialog, messagebox
 import tkinter as tk
 from pathlib import Path
+
+import scipy
 from pydub import AudioSegment
 import wave
 import matplotlib.pyplot as plt
 from pydub.utils import mediainfo
 from scipy.fft import fft
+from scipy.signal import welch
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg)
 import numpy as np
+
 
 class AudioAnalyzerApp:
     def __init__(self, master):
@@ -25,7 +29,6 @@ class AudioAnalyzerApp:
         self.raw_data = None
         self.frame_amount = None
         self.highest_resonance = StringVar()
-        self.lowest_resonance = StringVar()
 
         self._filepath = StringVar()
         self.str_filepath = None
@@ -84,14 +87,12 @@ class AudioAnalyzerApp:
         self.extra_data_file_frame.columnconfigure(0, weight=1)
 
         self.highest_resonance.set(f'Frequency of Highest Amplitude: ')
-        self.lowest_resonance.set(f'Frequency of Lowest Amplitude: ')
 
-        self.extra_data_highest_resonance_data = ttk.Label(self.extra_data_file_frame, textvariable=self.highest_resonance)
+        self.extra_data_highest_resonance_data = ttk.Label(self.extra_data_file_frame,
+                                                           textvariable=self.highest_resonance)
         self.extra_data_highest_resonance_data.grid(row=0, column=0, sticky='NW')
-        self.extra_data_lowest_resonance_data = ttk.Label(self.extra_data_file_frame, textvariable=self.lowest_resonance)
-        self.extra_data_lowest_resonance_data.grid(row=1, column=0, sticky='NW')
 
-    def getwavdata(self,audio_file):
+    def getwavdata(self, audio_file):
         wav_file = wave.open(audio_file, 'rb')
         audio_data = wav_file.readframes(wav_file.getnframes())
         return np.frombuffer(audio_data, np.int16)
@@ -131,9 +132,6 @@ class AudioAnalyzerApp:
                     format=os.path.splitext(audio_file_path)[-1].strip('.')
                 )
 
-
-
-
                 wav_data = audio_file.raw_data
                 self.wav_audio = AudioSegment(
                     wav_data,
@@ -150,8 +148,8 @@ class AudioAnalyzerApp:
 
     def extracttime(self):
         if self.wav_audio is not None:
-            time_duration = len(self.wav_audio)/1000
-            #wav_audio_time_length = np.linspace(0, time_duration, len(self.raw_data))
+            time_duration = len(self.wav_audio) / 1000
+            # wav_audio_time_length = np.linspace(0, time_duration, len(self.raw_data))
 
             wav_audio_time_length = self.frame_amount / self.wav_audio.frame_rate
 
@@ -182,21 +180,24 @@ class AudioAnalyzerApp:
             self.sb(f'Make sure to press load')
 
     def gethighestresonance(self):
-        samples = np.array(self.wav_audio.get_array_of_samples())
+        # samples = np.array(self.wav_audio.get_array_of_samples())
+        #
+        # fft_result = np.fft.fft(samples)
+        #
+        # frequencies = np.fft.fftfreq(len(fft_result), d=1 / self.wav_audio.frame_rate)
+        #
+        #
+        #
+        # highest_amplitude_index = np.argmax(np.abs(fft_result))
+        # highest_frequency = frequencies[highest_amplitude_index]
+        #
+        # self.highest_resonance.set(f'Frequency of Highest Amplitude: {round(highest_frequency, 2)}')
 
-        fft_result = np.fft.fft(samples)
+        data = np.array(self.wav_audio.get_array_of_samples())
 
-        frequencies = np.fft.fftfreq(len(fft_result), d=1/self.wav_audio.frame_rate)
-
-        highest_amplitude_index = np.argmax(np.abs(fft_result))
-        highest_frequency = frequencies[highest_amplitude_index]
-
-        self.highest_resonance.set(f'Frequency of Highest Amplitude: {round(highest_frequency, 2)}')
-        self.lowest_resonance.set(f'Frequency of Lowest Amplitude: {round(abs(frequencies).min(), 2)}')
-
-
-
-
+        frequencies, power = scipy.signal.welch(data, self.wav_audio.frame_rate, nperseg=4096)
+        dominant_frequency = frequencies[np.argmax(power)]
+        self.highest_resonance.set(f'Frequency of Highest Amplitude: {round(dominant_frequency, 2)}')
 
 if __name__ == "__main__":
     root = Tk()
