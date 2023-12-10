@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "CS Final Project"
+version = "1.0.0"
+authors = [
+  { name="Tris Replogle", email="treplogle4765@floridapoly.edu" },{name="Mynor Mendez ", email="mmendez4228@floridapoly.edu"}, {name="Reinaldo Roig ", email="rroig4482@floridapoly.edu"}
+]
+description = "A project for class meant to give information on an audio file."
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/rroig7/CSFinalProject"
+Issues = "https://github.com/rroig7/CSFinalProject/issues"
