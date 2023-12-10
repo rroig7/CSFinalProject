@@ -1,11 +1,9 @@
 import datetime
 import os.path
 from tkinter import *
-from tkinter import ttk, filedialog, messagebox
+from tkinter import ttk, filedialog
 import tkinter as tk
-from pathlib import Path
-
-import scipy
+from matplotlib.figure import Figure
 from pydub import AudioSegment
 import wave
 import matplotlib.pyplot as plt
@@ -65,7 +63,7 @@ class AudioAnalyzerApp:
         load_file_button.grid(row=1, column=1, sticky='E')
 
         self.data_file_frame = ttk.LabelFrame(self.mainframe, padding='5 5 5 5', text='Data')
-        self.data_file_frame.grid(column=0, row=2, sticky='NEW')
+        self.data_file_frame.grid(column=0, row=1, sticky='NEW')
         self.data_file_frame.rowconfigure(1, weight=1)
         self.data_file_frame.columnconfigure(0, weight=1)
 
@@ -74,6 +72,9 @@ class AudioAnalyzerApp:
 
         show_time = ttk.Button(self.data_file_frame, text='Time', command=self.extracttime)
         show_time.grid(column=0, row=2, sticky='WN')
+
+        show_plot2 = ttk.Button(self.data_file_frame, text='Plot Frequency', command=self.PlotFrequency)
+        show_plot2.grid(column=0, row=3, sticky='WN')
 
         self.status_frame = ttk.Frame(self.master, relief='sunken', padding='2 2 2 2')
         self.status_frame.grid(row=1, column=0, sticky='EWS')
@@ -119,7 +120,7 @@ class AudioAnalyzerApp:
             self.sb(f"Error: File {audio_file_path} not found.")
             return
 
-        supported_extensions = ['.mp3', '.wav', '.ogg']  # audio extensions
+        supported_extensions = ['.mp3', '.wav', '.ogg', '.m4a']  # audio extensions
         file_extension = os.path.splitext(audio_file_path)[1].lower()
 
         if file_extension not in supported_extensions:
@@ -139,22 +140,21 @@ class AudioAnalyzerApp:
                     sample_width=audio_file.sample_width,
                     channels=audio_file.channels
                 )
+                self.wav_audio = self.wav_audio.set_channels(1)
                 self.frame_amount = len(self.wav_audio.get_array_of_samples())
                 self.wav_audio.set_channels(1)
                 self.raw_data = np.frombuffer(self.wav_audio.raw_data, dtype=np.int16)
                 self.gethighestresonance()
             except Exception as e:
-                self.sb(f"Error during conversion: {e}")
+                # self.sb(f"Error during conversion: {e}")
+                print(f"Error: {e}")
 
     def extracttime(self):
         if self.wav_audio is not None:
             time_duration = len(self.wav_audio) / 1000
-            # wav_audio_time_length = np.linspace(0, time_duration, len(self.raw_data))
-
-            wav_audio_time_length = self.frame_amount / self.wav_audio.frame_rate
 
             time_min = time_duration // 60
-            time_sec = round(time_duration % (24 * 3600), 2)
+            time_sec = round(time_duration % 60)
 
             time_string = f'{time_min} minutes {time_sec} seconds'
             self.sb(f"Time is: {time_string}")
@@ -165,15 +165,21 @@ class AudioAnalyzerApp:
 
     def createplot(self):
         if self.wav_audio is not None:
-            # Calculate time values
-            time_values = np.arange(len(self.raw_data)) / self.wav_audio.frame_rate
-            fig, ax = plt.subplots(figsize=(7, 4))
-            ax.plot(time_values, self.raw_data)
-            ax.set_title('Waveform of ' + self._filepath.get().split('/')[-1])
-            ax.set_xlabel('Time (seconds)')
-            ax.set_ylabel('Amplitude')
+            samples = np.array(self.wav_audio.get_array_of_samples())
 
-            canvas = FigureCanvasTkAgg(fig, master=self.data_file_frame)
+            # Calculate time values for x-axis
+            duration_in_sec = len(self.wav_audio) / 1000
+            time_values = np.linspace(0, duration_in_sec, num=len(samples))
+
+            # Plot the waveform
+            figure = Figure(figsize=(7, 4), dpi=100)
+            plot = figure.add_subplot(1, 1, 1)
+            plot.plot(time_values, samples)
+            plot.set_xlabel("Time (seconds)")
+            plot.set_ylabel("Amplitude")
+            plot.set_title('Waveform of ' + self._filepath.get().split('/')[-1])
+
+            canvas = FigureCanvasTkAgg(figure, master=self.data_file_frame)
             canvas.draw()
             canvas.get_tk_widget().grid(column=0, row=3)
         else:
@@ -198,6 +204,21 @@ class AudioAnalyzerApp:
         frequencies, power = scipy.signal.welch(data, self.wav_audio.frame_rate, nperseg=4096)
         dominant_frequency = frequencies[np.argmax(power)]
         self.highest_resonance.set(f'Frequency of Highest Amplitude: {round(dominant_frequency, 2)}')
+
+
+    def PlotFrequency(self):
+        if self.wav_audio is not None:
+            # Convert AudioSegment to NumPy array
+            samples = np.array(self.wav_audio.get_array_of_samples())
+
+            # Find the index of the maximum amplitude
+            max_amplitude_index = np.argmax(np.abs(samples))
+
+            # Calculate time corresponding to the index
+            time_of_max_amplitude = max_amplitude_index / self.wav_audio.frame_rate
+            self.sb(f"Highest amplitude happened at {time_of_max_amplitude}")
+        else:
+            self.sb(f'Make sure to press load')
 
 if __name__ == "__main__":
     root = Tk()
