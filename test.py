@@ -49,7 +49,7 @@ audio_path = "C:/Users/Mynor/PycharmProjects/CSFinalProject/PinkPanther30.wav"
 frequency_range = (3000,12000)  # Specify the frequency range of interest
 plot_specific_frequencies(audio_path, frequency_range)"""
 
-import numpy as np
+"""import numpy as np
 import matplotlib.pyplot as plt
 from scipy.io import wavfile
 from pydub import AudioSegment
@@ -196,4 +196,8 @@ print(f"The RT60 reverb time for high frequencies is {np.round(abs(rt60_high), 2
 plt.grid()
 
 plt.show()
+
+"""
+
+import scipy.fft
 
