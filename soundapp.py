@@ -106,7 +106,7 @@ class AudioAnalyzerApp:
             self.sb(f"Error: File {audio_file_path} not found.")
             return
 
-        supported_extensions = ['.mp3', '.wav', '.ogg', '.m4a']  # audio extensions
+        supported_extensions = ['.mp3', '.wav', '.ogg']  # audio extensions
         file_extension = os.path.splitext(audio_file_path)[1].lower()
 
         if file_extension not in supported_extensions:
@@ -126,7 +126,7 @@ class AudioAnalyzerApp:
                     sample_width=audio_file.sample_width,
                     channels=audio_file.channels
                 )
-                self.wav_audio = self.wav_audio.set_channels(1)
+                self.wav_audio.set_channels(1)
                 self.raw_data = np.frombuffer(self.wav_audio.raw_data, dtype=np.int16)
             except Exception as e:
                 # self.sb(f"Error during conversion: {e}")

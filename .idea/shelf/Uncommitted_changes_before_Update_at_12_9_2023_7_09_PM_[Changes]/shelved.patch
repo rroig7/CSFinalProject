@@ -1,0 +1,350 @@
+Index: soundapp.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>import datetime\r\nimport os.path\r\nfrom tkinter import *\r\nfrom tkinter import ttk, filedialog\r\nimport tkinter as tk\r\nfrom matplotlib.figure import Figure\r\nfrom pydub import AudioSegment\r\nimport wave\r\nimport matplotlib.pyplot as plt\r\nfrom pydub.utils import mediainfo\r\nfrom scipy.fft import fft\r\nfrom matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg)\r\nimport numpy as np\r\n\r\n\r\nclass AudioAnalyzerApp:\r\n    def __init__(self, master):\r\n        self.master = master\r\n        self.master.title(\"Audio Analyzer\")\r\n        self.mainframe = None\r\n        self.load_file_frame = None\r\n        self.status_frame = None\r\n        self.choose_file_text = None\r\n        self.wav_audio = None\r\n        self.data_file_frame = None\r\n        self.raw_data = None\r\n\r\n        self._filepath = StringVar()\r\n        self.str_filepath = None\r\n        self._status_msg = StringVar()\r\n\r\n        self.create_widgets()\r\n\r\n    def create_widgets(self):\r\n        # master is essentially the same as root in tkinter\r\n        self.master.geometry('1000x700')\r\n        self.master.rowconfigure(0, weight=1)\r\n        self.master.columnconfigure(0, weight=1)\r\n\r\n        self.mainframe = ttk.Frame(self.master, padding='5 5 5 5')\r\n        self.mainframe.grid(row=0, column=0, sticky=\"NEWS\")\r\n        self.mainframe.rowconfigure(0, weight=1)\r\n        self.mainframe.columnconfigure(0, weight=1)\r\n\r\n        self.load_file_frame = ttk.LabelFrame(self.mainframe, padding='5 5 5 5', text='Choose File')\r\n        self.load_file_frame.grid(column=0, row=0, sticky='NEW')\r\n        self.load_file_frame.columnconfigure(0, weight=1)\r\n        self.load_file_frame.rowconfigure(0, weight=1)\r\n\r\n        choose_file_label = ttk.Label(self.load_file_frame, text='Please input file you would like to analyze:')\r\n        choose_file_label.grid(column=0, row=0, columnspan=1, sticky='NEWS')\r\n\r\n        self.choose_file_text = ttk.Entry(self.load_file_frame, width=70, textvariable=self._filepath)\r\n        self.choose_file_text.grid(column=0, row=1, sticky='NEWS')\r\n\r\n        choose_file_button = ttk.Button(self.load_file_frame, text=\"Browse\", command=self.getfilepath)\r\n        choose_file_button.grid(row=2, column=0, sticky='W')\r\n\r\n        load_file_button = ttk.Button(self.load_file_frame, text=\"Load\", command=self.loadfilepath)\r\n        load_file_button.grid(row=1, column=1, sticky='E')\r\n\r\n        self.data_file_frame = ttk.LabelFrame(self.mainframe, padding='5 5 5 5', text='Data')\r\n        self.data_file_frame.grid(column=0, row=1, sticky='NEW')\r\n        self.data_file_frame.rowconfigure(1, weight=1)\r\n        self.data_file_frame.columnconfigure(0, weight=1)\r\n\r\n        show_plot = ttk.Button(self.data_file_frame, text='Plot', command=self.createplot)\r\n        show_plot.grid(column=0, row=1, sticky='WN')\r\n\r\n        show_time = ttk.Button(self.data_file_frame, text='Time', command=self.extracttime)\r\n        show_time.grid(column=0, row=2, sticky='WN')\r\n\r\n        show_plot2 = ttk.Button(self.data_file_frame, text='Plot Frequency', command=self.PlotFrequency)\r\n        show_plot2.grid(column=0, row=3, sticky='WN')\r\n\r\n        self.status_frame = ttk.Frame(self.master, relief='sunken', padding='2 2 2 2')\r\n        self.status_frame.grid(row=1, column=0, sticky='EWS')\r\n        self._status_msg.set('')\r\n        status = ttk.Label(self.status_frame, textvariable=self._status_msg, anchor=W)\r\n        status.grid(row=0, column=0, sticky='EW')\r\n\r\n    def getwavdata(self, audio_file):\r\n        wav_file = wave.open(audio_file, 'rb')\r\n        audio_data = wav_file.readframes(wav_file.getnframes())\r\n        return np.frombuffer(audio_data, np.int16)\r\n\r\n    def getfilepath(self):\r\n        self._filepath.set(tk.filedialog.askopenfilename())\r\n\r\n    def loadfilepath(self):\r\n        try:\r\n            if str(self.choose_file_text.get()) != '':\r\n                self._filepath.set(self.choose_file_text.get())\r\n                self.sb(f'File path set as \\\"{self._filepath.get()}\\\"')\r\n                self.converttowav(self._filepath.get())\r\n            else:\r\n                self.sb('File path cannot be empty.')\r\n        except Exception as e:\r\n            self.sb(f'The error is {e}')\r\n\r\n    def sb(self, msg):\r\n        self._status_msg.set(msg)\r\n\r\n    def converttowav(self, audio_file_path):\r\n        if not os.path.isfile(audio_file_path):\r\n            self.sb(f\"Error: File {audio_file_path} not found.\")\r\n            return\r\n\r\n        supported_extensions = ['.mp3', '.wav', '.ogg']  # audio extensions\r\n        file_extension = os.path.splitext(audio_file_path)[1].lower()\r\n\r\n        if file_extension not in supported_extensions:\r\n            self.sb(f\"Error: Unsupported file format ({file_extension}). Supported formats are {supported_extensions}.\")\r\n            return\r\n        else:\r\n            try:\r\n                audio_file = AudioSegment.from_file(\r\n                    audio_file_path,\r\n                    format=os.path.splitext(audio_file_path)[-1].strip('.')\r\n                )\r\n\r\n                wav_data = audio_file.raw_data\r\n                self.wav_audio = AudioSegment(\r\n                    wav_data,\r\n                    frame_rate=audio_file.frame_rate,\r\n                    sample_width=audio_file.sample_width,\r\n                    channels=audio_file.channels\r\n                )\r\n                self.wav_audio.set_channels(1)\r\n                self.raw_data = np.frombuffer(self.wav_audio.raw_data, dtype=np.int16)\r\n            except Exception as e:\r\n                # self.sb(f\"Error during conversion: {e}\")\r\n                print(f\"Error: {e}\")\r\n\r\n    def extracttime(self):\r\n        if self.wav_audio is not None:\r\n            time_duration = len(self.wav_audio) / 1000\r\n\r\n            time_min = time_duration // 60\r\n            time_sec = round(time_duration % 60)\r\n\r\n            time_string = f'{time_min} minutes {time_sec} seconds'\r\n            self.sb(f\"Time is: {time_string}\")\r\n        else:\r\n            self.sb(f'Make sure to press load')\r\n\r\n    def createplot(self):\r\n        if self.wav_audio is not None:\r\n            samples = np.array(self.wav_audio.get_array_of_samples())\r\n\r\n            # Calculate time values for x-axis\r\n            duration_in_sec = len(self.wav_audio) / 1000\r\n            time_values = np.linspace(0, duration_in_sec, num=len(samples))\r\n\r\n            # Plot the waveform\r\n            figure = Figure(figsize=(7, 4), dpi=100)\r\n            plot = figure.add_subplot(1, 1, 1)\r\n            plot.plot(time_values, samples)\r\n            plot.set_xlabel(\"Time (seconds)\")\r\n            plot.set_ylabel(\"Amplitude\")\r\n            plot.set_title(\"Audio Waveform\")\r\n\r\n            canvas = FigureCanvasTkAgg(figure, master=self.data_file_frame)\r\n            canvas.draw()\r\n            canvas.get_tk_widget().grid(column=0, row=3)\r\n        else:\r\n            self.sb(f'Make sure to press load')\r\n\r\n    def PlotFrequency(self):\r\n        if self.wav_audio is not None:\r\n            # Convert AudioSegment to NumPy array\r\n            samples = np.array(self.wav_audio.get_array_of_samples())\r\n\r\n            # Find the index of the maximum amplitude\r\n            max_amplitude_index = np.argmax(np.abs(samples))\r\n\r\n            # Calculate time corresponding to the index\r\n            time_of_max_amplitude = max_amplitude_index / self.wav_audio.frame_rate\r\n            self.sb(f\"Highest amplitude happened at {time_of_max_amplitude}\")\r\n        else:\r\n            self.sb(f'Make sure to press load')\r\n\r\n\r\nif __name__ == \"__main__\":\r\n    root = Tk()\r\n    app = AudioAnalyzerApp(root)\r\n    root.mainloop()\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/soundapp.py b/soundapp.py
+--- a/soundapp.py	(revision a98fc4c649f1cf8b45fb3243df0bda9f5eb6789a)
++++ b/soundapp.py	(date 1702166963320)
+@@ -1,9 +1,9 @@
+ import datetime
+ import os.path
+ from tkinter import *
+-from tkinter import ttk, filedialog
++from tkinter import ttk, filedialog, messagebox
+ import tkinter as tk
+-from matplotlib.figure import Figure
++from pathlib import Path
+ from pydub import AudioSegment
+ import wave
+ import matplotlib.pyplot as plt
+@@ -12,7 +12,6 @@
+ from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg)
+ import numpy as np
+ 
+-
+ class AudioAnalyzerApp:
+     def __init__(self, master):
+         self.master = master
+@@ -24,6 +23,9 @@
+         self.wav_audio = None
+         self.data_file_frame = None
+         self.raw_data = None
++        self.frame_amount = None
++        self.highest_resonance = StringVar()
++        self.lowest_resonance = StringVar()
+ 
+         self._filepath = StringVar()
+         self.str_filepath = None
+@@ -60,7 +62,7 @@
+         load_file_button.grid(row=1, column=1, sticky='E')
+ 
+         self.data_file_frame = ttk.LabelFrame(self.mainframe, padding='5 5 5 5', text='Data')
+-        self.data_file_frame.grid(column=0, row=1, sticky='NEW')
++        self.data_file_frame.grid(column=0, row=2, sticky='NEW')
+         self.data_file_frame.rowconfigure(1, weight=1)
+         self.data_file_frame.columnconfigure(0, weight=1)
+ 
+@@ -70,16 +72,26 @@
+         show_time = ttk.Button(self.data_file_frame, text='Time', command=self.extracttime)
+         show_time.grid(column=0, row=2, sticky='WN')
+ 
+-        show_plot2 = ttk.Button(self.data_file_frame, text='Plot Frequency', command=self.PlotFrequency)
+-        show_plot2.grid(column=0, row=3, sticky='WN')
+-
+         self.status_frame = ttk.Frame(self.master, relief='sunken', padding='2 2 2 2')
+         self.status_frame.grid(row=1, column=0, sticky='EWS')
+         self._status_msg.set('')
+         status = ttk.Label(self.status_frame, textvariable=self._status_msg, anchor=W)
+         status.grid(row=0, column=0, sticky='EW')
+ 
+-    def getwavdata(self, audio_file):
++        self.extra_data_file_frame = ttk.LabelFrame(self.mainframe, padding='5 5 5 5', text='Audio Data')
++        self.extra_data_file_frame.grid(column=0, row=1, sticky='NEW')
++        self.extra_data_file_frame.rowconfigure(1, weight=1)
++        self.extra_data_file_frame.columnconfigure(0, weight=1)
++
++        self.highest_resonance.set(f'Frequency of Highest Amplitude: ')
++        self.lowest_resonance.set(f'Frequency of Lowest Amplitude: ')
++
++        self.extra_data_highest_resonance_data = ttk.Label(self.extra_data_file_frame, textvariable=self.highest_resonance)
++        self.extra_data_highest_resonance_data.grid(row=0, column=0, sticky='NW')
++        self.extra_data_lowest_resonance_data = ttk.Label(self.extra_data_file_frame, textvariable=self.lowest_resonance)
++        self.extra_data_lowest_resonance_data.grid(row=1, column=0, sticky='NW')
++
++    def getwavdata(self,audio_file):
+         wav_file = wave.open(audio_file, 'rb')
+         audio_data = wav_file.readframes(wav_file.getnframes())
+         return np.frombuffer(audio_data, np.int16)
+@@ -119,6 +131,9 @@
+                     format=os.path.splitext(audio_file_path)[-1].strip('.')
+                 )
+ 
++
++
++
+                 wav_data = audio_file.raw_data
+                 self.wav_audio = AudioSegment(
+                     wav_data,
+@@ -126,59 +141,61 @@
+                     sample_width=audio_file.sample_width,
+                     channels=audio_file.channels
+                 )
++                self.frame_amount = len(self.wav_audio.get_array_of_samples())
+                 self.wav_audio.set_channels(1)
+                 self.raw_data = np.frombuffer(self.wav_audio.raw_data, dtype=np.int16)
++                self.gethighestresonance()
+             except Exception as e:
+-                # self.sb(f"Error during conversion: {e}")
+-                print(f"Error: {e}")
++                self.sb(f"Error during conversion: {e}")
+ 
+     def extracttime(self):
+         if self.wav_audio is not None:
+-            time_duration = len(self.wav_audio) / 1000
++            time_duration = len(self.wav_audio)/1000
++            #wav_audio_time_length = np.linspace(0, time_duration, len(self.raw_data))
++
++            wav_audio_time_length = self.frame_amount / self.wav_audio.frame_rate
+ 
+             time_min = time_duration // 60
+-            time_sec = round(time_duration % 60)
++            time_sec = round(time_duration % (24 * 3600), 2)
+ 
+             time_string = f'{time_min} minutes {time_sec} seconds'
+             self.sb(f"Time is: {time_string}")
++
++            # print(mediainfo(self._filepath.get()))
+         else:
+             self.sb(f'Make sure to press load')
+ 
+     def createplot(self):
+         if self.wav_audio is not None:
+-            samples = np.array(self.wav_audio.get_array_of_samples())
+-
+-            # Calculate time values for x-axis
+-            duration_in_sec = len(self.wav_audio) / 1000
+-            time_values = np.linspace(0, duration_in_sec, num=len(samples))
++            # Calculate time values
++            time_values = np.arange(len(self.raw_data)) / self.wav_audio.frame_rate
++            fig, ax = plt.subplots(figsize=(7, 4))
++            ax.plot(time_values, self.raw_data)
++            ax.set_title('Waveform of ' + self._filepath.get().split('/')[-1])
++            ax.set_xlabel('Time (seconds)')
++            ax.set_ylabel('Amplitude')
+ 
+-            # Plot the waveform
+-            figure = Figure(figsize=(7, 4), dpi=100)
+-            plot = figure.add_subplot(1, 1, 1)
+-            plot.plot(time_values, samples)
+-            plot.set_xlabel("Time (seconds)")
+-            plot.set_ylabel("Amplitude")
+-            plot.set_title("Audio Waveform")
+-
+-            canvas = FigureCanvasTkAgg(figure, master=self.data_file_frame)
++            canvas = FigureCanvasTkAgg(fig, master=self.data_file_frame)
+             canvas.draw()
+             canvas.get_tk_widget().grid(column=0, row=3)
+         else:
+             self.sb(f'Make sure to press load')
+ 
+-    def PlotFrequency(self):
+-        if self.wav_audio is not None:
+-            # Convert AudioSegment to NumPy array
+-            samples = np.array(self.wav_audio.get_array_of_samples())
++    def gethighestresonance(self):
++        samples = np.array(self.wav_audio.get_array_of_samples())
+ 
+-            # Find the index of the maximum amplitude
+-            max_amplitude_index = np.argmax(np.abs(samples))
++        fft_result = np.fft.fft(samples)
++
++        frequencies = np.fft.fftfreq(len(fft_result), d=1/self.wav_audio.frame_rate)
+ 
+-            # Calculate time corresponding to the index
+-            time_of_max_amplitude = max_amplitude_index / self.wav_audio.frame_rate
+-            self.sb(f"Highest amplitude happened at {time_of_max_amplitude}")
+-        else:
+-            self.sb(f'Make sure to press load')
++        highest_amplitude_index = np.argmax(np.abs(fft_result))
++        highest_frequency = frequencies[highest_amplitude_index]
++
++        self.highest_resonance.set(f'Frequency of Highest Amplitude: {round(highest_frequency, 2)}')
++        self.lowest_resonance.set(f'Frequency of Lowest Amplitude: {round(abs(frequencies).min(), 2)}')
++
++
++
+ 
+ 
+ if __name__ == "__main__":
+Index: .idea/CSFinalProject.iml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/CSFinalProject.iml b/.idea/CSFinalProject.iml
+deleted file mode 100644
+--- a/.idea/CSFinalProject.iml	(revision a98fc4c649f1cf8b45fb3243df0bda9f5eb6789a)
++++ /dev/null	(revision a98fc4c649f1cf8b45fb3243df0bda9f5eb6789a)
+@@ -1,8 +0,0 @@
+-<?xml version="1.0" encoding="UTF-8"?>
+-<module type="PYTHON_MODULE" version="4">
+-  <component name="NewModuleRootManager">
+-    <content url="file://$MODULE_DIR$" />
+-    <orderEntry type="jdk" jdkName="C:\Users\rroig\AppData\Local\Programs\Python\Python311\python.exe" jdkType="Python SDK" />
+-    <orderEntry type="sourceFolder" forTests="false" />
+-  </component>
+-</module>
+\ No newline at end of file
+Index: .idea/workspace.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project version=\"4\">\r\n  <component name=\"AutoImportSettings\">\r\n    <option name=\"autoReloadType\" value=\"SELECTIVE\" />\r\n  </component>\r\n  <component name=\"ChangeListManager\">\r\n    <list default=\"true\" id=\"6ebac40b-ffe6-48a4-a7be-805d589e8014\" name=\"Changes\" comment=\"added new frame that shows frequencies of highest amplitudes (still working on lowest)\">\r\n      <change beforePath=\"$PROJECT_DIR$/.idea/.gitignore\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/.idea/.gitignore\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/.idea/misc.xml\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/.idea/misc.xml\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/.idea/workspace.xml\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/.idea/workspace.xml\" afterDir=\"false\" />\r\n    </list>\r\n    <option name=\"SHOW_DIALOG\" value=\"false\" />\r\n    <option name=\"HIGHLIGHT_CONFLICTS\" value=\"true\" />\r\n    <option name=\"HIGHLIGHT_NON_ACTIVE_CHANGELIST\" value=\"false\" />\r\n    <option name=\"LAST_RESOLUTION\" value=\"IGNORE\" />\r\n  </component>\r\n  <component name=\"Git.Settings\">\r\n    <option name=\"RECENT_BRANCH_BY_REPOSITORY\">\r\n      <map>\r\n        <entry key=\"$PROJECT_DIR$\" value=\"mynor-mendez\" />\r\n      </map>\r\n    </option>\r\n    <option name=\"RECENT_GIT_ROOT_PATH\" value=\"$PROJECT_DIR$\" />\r\n    <option name=\"RESET_MODE\" value=\"HARD\" />\r\n  </component>\r\n  <component name=\"GitHubPullRequestSearchHistory\">{\r\n  &quot;lastFilter&quot;: {\r\n    &quot;state&quot;: &quot;OPEN&quot;,\r\n    &quot;assignee&quot;: &quot;rroig7&quot;\r\n  }\r\n}</component>\r\n  <component name=\"GithubPullRequestsUISettings\">\r\n    <option name=\"selectedUrlAndAccountId\">\r\n      <UrlAndAccount>\r\n        <option name=\"accountId\" value=\"6edc61d3-0af3-4985-9e68-002a7019cd74\" />\r\n        <option name=\"url\" value=\"https://github.com/rroig7/CSFinalProject\" />\r\n      </UrlAndAccount>\r\n    </option>\r\n  </component>\r\n  <component name=\"ProjectColorInfo\">{\r\n  &quot;associatedIndex&quot;: 0\r\n}</component>\r\n  <component name=\"ProjectId\" id=\"2Y82rmBTwK4pycpqfbCu3VaoG8j\" />\r\n  <component name=\"ProjectViewState\">\r\n    <option name=\"hideEmptyMiddlePackages\" value=\"true\" />\r\n    <option name=\"showLibraryContents\" value=\"true\" />\r\n  </component>\r\n  <component name=\"PropertiesComponent\">{\r\n  &quot;keyToString&quot;: {\r\n    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,\r\n    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,\r\n    &quot;git-widget-placeholder&quot;: &quot;reinaldo-roig&quot;,\r\n    &quot;last_opened_file_path&quot;: &quot;C:/Users/rroig/OneDrive/PC/Documents/PycharmProjects/CSFinalProject&quot;,\r\n    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;\r\n  }\r\n}</component>\r\n  <component name=\"SpellCheckerSettings\" RuntimeDictionaries=\"0\" Folders=\"0\" CustomDictionaries=\"0\" DefaultDictionary=\"application-level\" UseSingleDictionary=\"true\" transferred=\"true\" />\r\n  <component name=\"TaskManager\">\r\n    <task active=\"true\" id=\"Default\" summary=\"Default task\">\r\n      <changelist id=\"6ebac40b-ffe6-48a4-a7be-805d589e8014\" name=\"Changes\" comment=\"\" />\r\n      <created>1699893086749</created>\r\n      <option name=\"number\" value=\"Default\" />\r\n      <option name=\"presentableId\" value=\"Default\" />\r\n      <updated>1699893086749</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00001\" summary=\"testing bracnh\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1699893576620</created>\r\n      <option name=\"number\" value=\"00001\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00001\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1699893576621</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00002\" summary=\"- testing\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1699898655781</created>\r\n      <option name=\"number\" value=\"00002\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00002\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1699898655781</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00003\" summary=\"- testing removed\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1699898723643</created>\r\n      <option name=\"number\" value=\"00003\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00003\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1699898723643</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00004\" summary=\"Added file choosing frame, &#10;&#10;added load button to save filepath to _filepath variable\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1699907035724</created>\r\n      <option name=\"number\" value=\"00004\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00004\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1699907035724</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00005\" summary=\"RESIZING WOOHOOO\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1699909490986</created>\r\n      <option name=\"number\" value=\"00005\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00005\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1699909490986</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00006\" summary=\"RESIZING WOOHOOO\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1699909666047</created>\r\n      <option name=\"number\" value=\"00006\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00006\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1699909666047</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00007\" summary=\"RESIZING WOOHOOO\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1699909858817</created>\r\n      <option name=\"number\" value=\"00007\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00007\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1699909858817</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00008\" summary=\"yuh\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1699910228098</created>\r\n      <option name=\"number\" value=\"00008\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00008\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1699910228098</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00009\" summary=\"added test wav&#10;&#10;created plot button\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1699915408009</created>\r\n      <option name=\"number\" value=\"00009\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00009\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1699915408009</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00010\" summary=\"graph now shows up in the app rather than creating a new window!\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1699923099490</created>\r\n      <option name=\"number\" value=\"00010\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00010\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1699923099490</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00011\" summary=\"graph now shows up in the app rather than creating a new window!\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1699926810321</created>\r\n      <option name=\"number\" value=\"00011\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00011\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1699926810321</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00012\" summary=\"new converttowav function, this one works better&#10;&#10;also changed createplot function so you should be able to use any audio file type and it will be converted automatically within python.\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1699930825550</created>\r\n      <option name=\"number\" value=\"00012\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00012\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1699930825550</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00013\" summary=\"data button prints the time of the file into the console&#10;&#10;still gotta work on it though\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1699975432334</created>\r\n      <option name=\"number\" value=\"00013\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00013\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1699975432334</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00014\" summary=\"data button prints the time of the file into the console&#10;&#10;still gotta work on it though\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1699979246891</created>\r\n      <option name=\"number\" value=\"00014\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00014\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1699979246891</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00015\" summary=\"moving\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1700252068139</created>\r\n      <option name=\"number\" value=\"00015\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00015\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1700252068139</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00016\" summary=\"moving\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1700514319056</created>\r\n      <option name=\"number\" value=\"00016\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00016\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1700514319056</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00017\" summary=\"working on getting highest resonance\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1700520139232</created>\r\n      <option name=\"number\" value=\"00017\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00017\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1700520139232</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00018\" summary=\"yeet\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1701462199543</created>\r\n      <option name=\"number\" value=\"00018\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00018\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1701462199543</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00019\" summary=\"save merge\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1701464994753</created>\r\n      <option name=\"number\" value=\"00019\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00019\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1701464994753</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00020\" summary=\"added new frame that shows frequencies of highest amplitudes (still working on lowest)\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1701471605529</created>\r\n      <option name=\"number\" value=\"00020\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00020\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1701471605529</updated>\r\n    </task>\r\n    <option name=\"localTasksCounter\" value=\"21\" />\r\n    <servers />\r\n  </component>\r\n  <component name=\"Vcs.Log.Tabs.Properties\">\r\n    <option name=\"RECENT_FILTERS\">\r\n      <map>\r\n        <entry key=\"Branch\">\r\n          <value>\r\n            <list>\r\n              <RecentGroup>\r\n                <option name=\"FILTER_VALUES\">\r\n                  <option value=\"reinaldo-roig\" />\r\n                </option>\r\n              </RecentGroup>\r\n              <RecentGroup>\r\n                <option name=\"FILTER_VALUES\">\r\n                  <option value=\"origin/mynor-mendez\" />\r\n                </option>\r\n              </RecentGroup>\r\n              <RecentGroup>\r\n                <option name=\"FILTER_VALUES\">\r\n                  <option value=\"mynor-mendez\" />\r\n                </option>\r\n              </RecentGroup>\r\n              <RecentGroup>\r\n                <option name=\"FILTER_VALUES\">\r\n                  <option value=\"HEAD\" />\r\n                </option>\r\n              </RecentGroup>\r\n            </list>\r\n          </value>\r\n        </entry>\r\n      </map>\r\n    </option>\r\n    <option name=\"TAB_STATES\">\r\n      <map>\r\n        <entry key=\"MAIN\">\r\n          <value>\r\n            <State>\r\n              <option name=\"FILTERS\">\r\n                <map>\r\n                  <entry key=\"branch\">\r\n                    <value>\r\n                      <list>\r\n                        <option value=\"reinaldo-roig\" />\r\n                      </list>\r\n                    </value>\r\n                  </entry>\r\n                </map>\r\n              </option>\r\n            </State>\r\n          </value>\r\n        </entry>\r\n      </map>\r\n    </option>\r\n  </component>\r\n  <component name=\"VcsManagerConfiguration\">\r\n    <MESSAGE value=\"testing bracnh\" />\r\n    <MESSAGE value=\"- testing\" />\r\n    <MESSAGE value=\"- testing removed\" />\r\n    <MESSAGE value=\"Added file choosing frame, &#10;&#10;added load button to save filepath to _filepath variable\" />\r\n    <MESSAGE value=\"RESIZING WOOHOOO\" />\r\n    <MESSAGE value=\"yuh\" />\r\n    <MESSAGE value=\"added test wav&#10;&#10;created plot button\" />\r\n    <MESSAGE value=\"graph now shows up in the app rather than creating a new window!\" />\r\n    <MESSAGE value=\"new converttowav function, this one works better&#10;&#10;also changed createplot function so you should be able to use any audio file type and it will be converted automatically within python.\" />\r\n    <MESSAGE value=\"data button prints the time of the file into the console&#10;&#10;still gotta work on it though\" />\r\n    <MESSAGE value=\"moving\" />\r\n    <MESSAGE value=\"working on getting highest resonance\" />\r\n    <MESSAGE value=\"yeet\" />\r\n    <MESSAGE value=\"save merge\" />\r\n    <MESSAGE value=\"added new frame that shows frequencies of highest amplitudes (still working on lowest)\" />\r\n    <option name=\"LAST_COMMIT_MESSAGE\" value=\"added new frame that shows frequencies of highest amplitudes (still working on lowest)\" />\r\n  </component>\r\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/workspace.xml b/.idea/workspace.xml
+--- a/.idea/workspace.xml	(revision a98fc4c649f1cf8b45fb3243df0bda9f5eb6789a)
++++ b/.idea/workspace.xml	(date 1702166341453)
+@@ -4,10 +4,11 @@
+     <option name="autoReloadType" value="SELECTIVE" />
+   </component>
+   <component name="ChangeListManager">
+-    <list default="true" id="6ebac40b-ffe6-48a4-a7be-805d589e8014" name="Changes" comment="added new frame that shows frequencies of highest amplitudes (still working on lowest)">
+-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.gitignore" afterDir="false" />
++    <list default="true" id="6ebac40b-ffe6-48a4-a7be-805d589e8014" name="Changes" comment="Buttons for the other plots no working functions yet">
++      <change beforePath="$PROJECT_DIR$/.idea/CSFinalProject.iml" beforeDir="false" />
+       <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/soundapp.py" beforeDir="false" afterPath="$PROJECT_DIR$/soundapp.py" afterDir="false" />
+     </list>
+     <option name="SHOW_DIALOG" value="false" />
+     <option name="HIGHLIGHT_CONFLICTS" value="true" />
+@@ -32,10 +33,13 @@
+   <component name="GithubPullRequestsUISettings">
+     <option name="selectedUrlAndAccountId">
+       <UrlAndAccount>
+-        <option name="accountId" value="6edc61d3-0af3-4985-9e68-002a7019cd74" />
+-        <option name="url" value="https://github.com/rroig7/CSFinalProject" />
++        <option name="accountId" value="a13e1dc9-4d70-44fb-be83-b6f7c5cc3fe2" />
++        <option name="url" value="https://github.com/rroig7/CSFinalProject.git" />
+       </UrlAndAccount>
+     </option>
++  </component>
++  <component name="HighlightingSettingsPerFile">
++    <setting file="file://$PROJECT_DIR$/soundapp.py" root0="FORCE_HIGHLIGHTING" />
+   </component>
+   <component name="ProjectColorInfo">{
+   &quot;associatedIndex&quot;: 0
+@@ -49,11 +53,58 @@
+   &quot;keyToString&quot;: {
+     &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+-    &quot;git-widget-placeholder&quot;: &quot;reinaldo-roig&quot;,
+-    &quot;last_opened_file_path&quot;: &quot;C:/Users/rroig/OneDrive/PC/Documents/PycharmProjects/CSFinalProject&quot;,
++    &quot;git-widget-placeholder&quot;: &quot;tris-replogle&quot;,
++    &quot;last_opened_file_path&quot;: &quot;C:/Users/tooki/CSFinalProject&quot;,
++    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+     &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
+   }
+ }</component>
++  <component name="RunManager">
++    <configuration name="soundapp" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
++      <option name="INTERPRETER_OPTIONS" value="" />
++      <option name="PARENT_ENVS" value="true" />
++      <envs>
++        <env name="PYTHONUNBUFFERED" value="1" />
++      </envs>
++      <option name="SDK_HOME" value="" />
++      <option name="SDK_NAME" value="Python 3.10 (CSFinalProject)" />
++      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
++      <option name="IS_MODULE_SDK" value="false" />
++      <option name="ADD_CONTENT_ROOTS" value="true" />
++      <option name="ADD_SOURCE_ROOTS" value="true" />
++      <module name="" />
++      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/soundapp.py" />
++      <option name="PARAMETERS" value="" />
++      <option name="SHOW_COMMAND_LINE" value="false" />
++      <option name="EMULATE_TERMINAL" value="false" />
++      <option name="MODULE_MODE" value="false" />
++      <option name="REDIRECT_INPUT" value="false" />
++      <option name="INPUT_FILE" value="" />
++      <method v="2" />
++    </configuration>
++    <configuration name="test" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
++      <option name="INTERPRETER_OPTIONS" value="" />
++      <option name="PARENT_ENVS" value="true" />
++      <envs>
++        <env name="PYTHONUNBUFFERED" value="1" />
++      </envs>
++      <option name="SDK_HOME" value="" />
++      <option name="SDK_NAME" value="Python 3.10 (CSFinalProject)" />
++      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
++      <option name="IS_MODULE_SDK" value="false" />
++      <option name="ADD_CONTENT_ROOTS" value="true" />
++      <option name="ADD_SOURCE_ROOTS" value="true" />
++      <module name="" />
++      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/test.py" />
++      <option name="PARAMETERS" value="" />
++      <option name="SHOW_COMMAND_LINE" value="false" />
++      <option name="EMULATE_TERMINAL" value="false" />
++      <option name="MODULE_MODE" value="false" />
++      <option name="REDIRECT_INPUT" value="false" />
++      <option name="INPUT_FILE" value="" />
++      <method v="2" />
++    </configuration>
++  </component>
+   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+   <component name="TaskManager">
+     <task active="true" id="Default" summary="Default task">
+@@ -261,19 +312,7 @@
+       <map>
+         <entry key="MAIN">
+           <value>
+-            <State>
+-              <option name="FILTERS">
+-                <map>
+-                  <entry key="branch">
+-                    <value>
+-                      <list>
+-                        <option value="reinaldo-roig" />
+-                      </list>
+-                    </value>
+-                  </entry>
+-                </map>
+-              </option>
+-            </State>
++            <State />
+           </value>
+         </entry>
+       </map>
+@@ -295,6 +334,7 @@
+     <MESSAGE value="yeet" />
+     <MESSAGE value="save merge" />
+     <MESSAGE value="added new frame that shows frequencies of highest amplitudes (still working on lowest)" />
+-    <option name="LAST_COMMIT_MESSAGE" value="added new frame that shows frequencies of highest amplitudes (still working on lowest)" />
++    <MESSAGE value="Buttons for the other plots no working functions yet" />
++    <option name="LAST_COMMIT_MESSAGE" value="Buttons for the other plots no working functions yet" />
+   </component>
+ </project>
+\ No newline at end of file
+Index: .idea/misc.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project version=\"4\">\r\n  <component name=\"Black\">\r\n    <option name=\"sdkName\" value=\"C:\\Users\\rroig\\AppData\\Local\\Programs\\Python\\Python311\\python.exe\" />\r\n  </component>\r\n  <component name=\"ProjectRootManager\" version=\"2\" project-jdk-name=\"C:\\Users\\rroig\\AppData\\Local\\Programs\\Python\\Python311\\python.exe\" project-jdk-type=\"Python SDK\" />\r\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/misc.xml b/.idea/misc.xml
+--- a/.idea/misc.xml	(revision a98fc4c649f1cf8b45fb3243df0bda9f5eb6789a)
++++ b/.idea/misc.xml	(date 1701995320664)
+@@ -3,5 +3,5 @@
+   <component name="Black">
+     <option name="sdkName" value="C:\Users\rroig\AppData\Local\Programs\Python\Python311\python.exe" />
+   </component>
+-  <component name="ProjectRootManager" version="2" project-jdk-name="C:\Users\rroig\AppData\Local\Programs\Python\Python311\python.exe" project-jdk-type="Python SDK" />
++  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.10 (CSFinalProject)" project-jdk-type="Python SDK" />
+ </project>
+\ No newline at end of file
